@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+    <metadata>
+        <id>Grumpy.MessageQueue</id>
+        <version>0</version>
+        <title>Grumpy.MessageQueue</title>
+        <description>Message Queue Interface and none implementation specific features</description>
+        <summary>
+            Interface to a Message Queue Implementation.
+        </summary>
+        <tags>Message Queue MQ</tags>
+        <authors>Anders Busted-Janum</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <language>en-US</language>
+        <copyright>Copyright © Anders Busted-Janum 2018</copyright>
+        <dependencies>
+            <dependency id="Grumpy.Common" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="Grumpy.MessageQueue.dll" target="lib\net451" />
+        <file src="Grumpy.MessageQueue.pdb" target="lib\net451" />
+    </files>
+</package>
