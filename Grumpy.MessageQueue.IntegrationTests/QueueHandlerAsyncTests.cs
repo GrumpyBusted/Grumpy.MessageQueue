@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
 
-namespace Grumpy.MessageQueue.UnitTests
+namespace Grumpy.MessageQueue.IntegrationTests
 {
     // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
     public class QueueHandlerAsyncTests : IDisposable
@@ -40,48 +40,28 @@ namespace Grumpy.MessageQueue.UnitTests
         }
 
         [Fact]
-        public void ReceiveOnSingleThreadedHandlerShouldBeSlow()
+        public void ReceiveOnMultiThreadedHandlerShouldBeFast()
         {
             _stopwatch.Start();
 
-            ExecuteHandler((m, c) => Thread.Sleep(1000), false);
+            ExecuteHandler((m, c) => Thread.Sleep(1000), true);
 
             _stopwatch.Stop();
-            _stopwatch.ElapsedMilliseconds.Should().BeInRange(2500, 3500);
+            _stopwatch.ElapsedMilliseconds.Should().BeInRange(900, 1900);
         }
         
+        
         [Fact]
-        public void CanStopQueue()
+        public void CancelShouldStopHandler()
         {
-            using (var cut = CreateQueueHandler())
-            {
-                cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, (m,c) => { }, null, null, 100, false, false, _cancellationToken);
-                cut.Stop();
-            }
-        }
+            _stopwatch.Start();
 
-        [Fact]
-        public void QueueBeforeShouldBeIdle()
-        {
-            using (var cut = CreateQueueHandler())
-            {
-                cut.Idle.Should().BeTrue();
-            }
-        }
+            _cancellationTokenSource.CancelAfter(1000);
 
-        [Fact]
-        public void QueueAfterShouldNotBeIdle()
-        {
-            using (var cut = CreateQueueHandler())
-            {
-                cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, (m,c) => { }, null, null, 100, false, false, _cancellationToken);
-                cut.Idle.Should().BeFalse();
-            }
-        }
+            ExecuteHandler((m, c) => { c.WaitHandle.WaitOne(2000); }, true);
 
-        private IQueueHandler CreateQueueHandler()
-        {
-            return new QueueHandler(_queueFactory, _taskFactory);
+            _stopwatch.Stop();
+            _stopwatch.ElapsedMilliseconds.Should().BeLessThan(1500);
         }
 
         private void ExecuteHandler(Action<object, CancellationToken> messageHandler, bool multiThreadedHandler)
