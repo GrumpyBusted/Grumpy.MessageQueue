@@ -10,9 +10,12 @@
         </summary>
         <tags>Message Queue MQ</tags>
         <authors>Anders Busted-Janum</authors>
+        <owners>GrumpyBusted</owners>
+        <projectUrl>https://github.com/GrumpyBusted/Grumpy.MessageQueue</projectUrl>
+        <licenseUrl>https://github.com/GrumpyBusted/Grumpy.MessageQueue/blob/master/LICENSE</licenseUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <language>en-US</language>
-        <copyright>Copyright © Anders Busted-Janum 2018</copyright>
+        <copyright>Copyright © Busted-Janum 2018</copyright>
         <dependencies>
             <dependency id="Grumpy.Common" />
         </dependencies>
@@ -20,5 +23,7 @@
     <files>
         <file src="Grumpy.MessageQueue.dll" target="lib\net451" />
         <file src="Grumpy.MessageQueue.pdb" target="lib\net451" />
+        <file src="Grumpy.MessageQueue.TestTools.dll" target="lib\net451" />
+        <file src="Grumpy.MessageQueue.TestTools.pdb" target="lib\net451" />
     </files>
 </package>

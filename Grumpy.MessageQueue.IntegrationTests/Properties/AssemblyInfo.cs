@@ -1,14 +1,14 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Grumpy.MessageQueue")]
-[assembly: AssemblyDescription("Message Queue Interface and none implementation specific features")]
+[assembly: AssemblyTitle("Grumpy.MessageQueue.IntegrationTests")]
+[assembly: AssemblyDescription("Integration Tests for Grumpy.MessageQueue")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Grumpy.MessageQueue")]
+[assembly: AssemblyProduct("Grumpy.MessageQueue.IntegrationTests")]
 [assembly: AssemblyCopyright("Copyright © Busted-Janum 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
-[assembly: Guid("4e4557e1-63ca-40c0-b3fe-d3f4997158ff")]
+[assembly: Guid("1211f252-ede8-43d3-a0a0-70c4d17ed063")]
 [assembly: AssemblyVersion("1.0.*")]
