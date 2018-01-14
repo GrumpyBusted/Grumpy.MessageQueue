@@ -364,6 +364,32 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
             }
         }
 
+
+        [Fact]
+        public void SendAndReceiveAsyncDtoMessageShouldWork()
+        {
+            var name = $"IntegrationTest_{UniqueKeyUtility.Generate()}";
+
+            try
+            {
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                {
+                    queue.Send(new MyDto { S = "ABC", I = 2 });
+                }
+
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                {
+                    var dto = (MyDto)queue.ReceiveAsync(100, _cancellationToken).Result.Message;
+
+                    dto.S.Should().Be("ABC");
+                    dto.I.Should().Be(2);
+                }
+            }
+            finally
+            {
+                _messageQueueManager.Delete(name, true);
+            }
+        }
         [Fact]
         public void SendMessageToReceiveWithCancellationShouldReceiveMessage()
         {

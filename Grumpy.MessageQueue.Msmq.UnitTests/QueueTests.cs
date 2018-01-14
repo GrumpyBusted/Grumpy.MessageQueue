@@ -239,17 +239,6 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
             }
         }
 
-        [Fact]
-        public void ReceiveAsyncFromEmptyQueueShouldReturnNullAfterTimeout()
-        {
-            SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
-
-            using (var cut = CreateLocalQueue())
-            {
-                cut.ReceiveAsync(10, _cancellationToken).Result.Message.Should().BeNull();
-            }
-        }
-
         private IQueue CreateLocalQueue(string queue = "MyQueue", bool privateQueue = true, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster)
         {
             return new LocaleQueue(_messageQueueManager, queue, privateQueue, localeQueueMode, true);
