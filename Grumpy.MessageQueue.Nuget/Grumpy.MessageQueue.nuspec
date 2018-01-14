@@ -4,11 +4,16 @@
         <id>Grumpy.MessageQueue</id>
         <version>0</version>
         <title>Grumpy.MessageQueue</title>
-        <description>Message Queue Interface and none implementation specific features</description>
+        <description>Extended and opinionated API for Microsoft Message Queue (MSMQ)</description>
         <summary>
-            Interface to a Message Queue Implementation.
+            API for Microsoft Message queue (MSMQ). This API extents the API with:
+            - Larger messages
+            - Transactional messages with Ack and NAck feature
+            - Queue Handler (Listener) to trigger handler method when messages are received
+            - Automatic management of queues (Create and Delete)
+            This API only includes a sub set of the features in MSMQ, but the features that are most used (and needed for my other solution). The API makes the use of MSMQ easy and strait forward.
         </summary>
-        <tags>Message Queue MQ</tags>
+        <tags>Message Queue MQ MSMQ</tags>
         <authors>Anders Busted-Janum</authors>
         <owners>GrumpyBusted</owners>
         <projectUrl>https://github.com/GrumpyBusted/Grumpy.MessageQueue</projectUrl>
@@ -17,12 +22,15 @@
         <language>en-US</language>
         <copyright>Copyright © Busted-Janum 2018</copyright>
         <dependencies>
-            <dependency id="Grumpy.Common" />
+            <dependency id="Grumpy.Common" version="1.1.0" />
+            <dependency id="Grumpy.Json" version="1.1.0" />
         </dependencies>
     </metadata>
     <files>
         <file src="Grumpy.MessageQueue.dll" target="lib\net451" />
         <file src="Grumpy.MessageQueue.pdb" target="lib\net451" />
+        <file src="Grumpy.MessageQueue.Msmq.dll" target="lib\net451" />
+        <file src="Grumpy.MessageQueue.Msmq.pdb" target="lib\net451" />
         <file src="Grumpy.MessageQueue.TestTools.dll" target="lib\net451" />
         <file src="Grumpy.MessageQueue.TestTools.pdb" target="lib\net451" />
     </files>

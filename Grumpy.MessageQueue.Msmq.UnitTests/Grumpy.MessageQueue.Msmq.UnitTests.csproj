@@ -35,7 +35,6 @@
     <Reference Include="System.Messaging" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Grumpy.MessageQueue.Msmq.nuspec" />
     <Compile Include="Helper\MyDto.cs" />
     <Compile Include="LocaleQueueTests.cs" />
     <Compile Include="MessageQueueFactoryTests.cs" />
@@ -52,6 +51,10 @@
     <ProjectReference Include="..\Grumpy.MessageQueue.Msmq\Grumpy.MessageQueue.Msmq.csproj">
       <Project>{df8e5544-3235-4307-8ff5-ec2cac7a9414}</Project>
       <Name>Grumpy.MessageQueue.Msmq</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Grumpy.MessageQueue\Grumpy.MessageQueue.csproj">
+      <Project>{4e4557e1-63ca-40c0-b3fe-d3f4997158ff}</Project>
+      <Name>Grumpy.MessageQueue</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

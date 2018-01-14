@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D2F8573F-B334-43E6-99CF-CA1E04801827}</ProjectGuid>
+    <ProjectGuid>{41DAB58F-5CB3-4DA8-9EAD-08E0BCBB350B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Grumpy.MessageQueue.Msmq.IntegrationTests</RootNamespace>
-    <AssemblyName>Grumpy.MessageQueue.Msmq.IntegrationTests</AssemblyName>
+    <RootNamespace>Grumpy.MessageQueue.Nuget</RootNamespace>
+    <AssemblyName>Grumpy.MessageQueue.Nuget</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -32,31 +32,28 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Messaging" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Helper\MyDto.cs" />
-    <Compile Include="LocaleQueueTests.cs" />
-    <Compile Include="MessageQueueFactoryTests.cs" />
-    <Compile Include="MessageQueueManagerPublicTests.cs" />
-    <Compile Include="MessageQueueManagerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RemoteQueueTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Grumpy.TestTools">
-      <Version>1.1.0</Version>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Grumpy.MessageQueue.Msmq\Grumpy.MessageQueue.Msmq.csproj">
       <Project>{df8e5544-3235-4307-8ff5-ec2cac7a9414}</Project>
       <Name>Grumpy.MessageQueue.Msmq</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Grumpy.MessageQueue.TestTools\Grumpy.MessageQueue.TestTools.csproj">
+      <Project>{a36c4478-47ff-4054-a26a-107c850b3dd2}</Project>
+      <Name>Grumpy.MessageQueue.TestTools</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Grumpy.MessageQueue\Grumpy.MessageQueue.csproj">
       <Project>{4e4557e1-63ca-40c0-b3fe-d3f4997158ff}</Project>
       <Name>Grumpy.MessageQueue</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Grumpy.MessageQueue.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

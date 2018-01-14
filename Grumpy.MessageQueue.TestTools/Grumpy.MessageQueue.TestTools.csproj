@@ -49,10 +49,5 @@
       <Version>1.1.0</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Grumpy.MessageQueue.nuspec">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

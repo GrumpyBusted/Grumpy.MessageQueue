@@ -181,27 +181,6 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         }
 
         [Fact]
-        public void ReceiveAsyncStringDtoShouldReturnData()
-        {
-            var messageQueue = Substitute.For<System.Messaging.MessageQueue>();
-
-            SetQueue(messageQueue, true);
-
-            AddMessageToQueue("Hallo");
-
-            using (var cut = CreateLocalQueue())
-            {
-                var task = cut.ReceiveAsync(100000, _cancellationToken);
-
-                var res = task.Result;
-                var msg = res.Message;
-
-                msg.GetType().Should().Be(typeof(string));
-                ((string)msg).Should().Be("Hallo");
-            }
-        }
-
-        [Fact]
         public void ReceiveMessageShouldReturnData()
         {
             var messageQueue = Substitute.For<System.Messaging.MessageQueue>();
@@ -257,6 +236,17 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
             using (var cut = CreateLocalQueue())
             {
                 cut.Receive(10, _cancellationToken).Message.Should().BeNull();
+            }
+        }
+
+        [Fact]
+        public void ReceiveAsyncFromEmptyQueueShouldReturnNullAfterTimeout()
+        {
+            SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
+
+            using (var cut = CreateLocalQueue())
+            {
+                cut.ReceiveAsync(10, _cancellationToken).Result.Message.Should().BeNull();
             }
         }
 
