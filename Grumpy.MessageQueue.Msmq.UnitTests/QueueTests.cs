@@ -34,7 +34,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         {
             SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
 
-            using (var cut = CreateLocalQueue("MyQueue", true, LocaleQueueMode.Durable))
+            using (var cut = CreateLocaleQueue("MyQueue", true, LocaleQueueMode.Durable))
             {
                 cut.Send("Message");
             }
@@ -49,7 +49,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
             _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(e => false, e => false, e => false, e => true);
             _messageQueueManager.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(new System.Messaging.MessageQueue());
 
-            using (var cut = CreateLocalQueue())
+            using (var cut = CreateLocaleQueue())
             {
                 cut.Send("Message");
             }
@@ -62,7 +62,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         {
             SetQueue(Substitute.For<System.Messaging.MessageQueue>(), false);
 
-            using (var cut = CreateLocalQueue())
+            using (var cut = CreateLocaleQueue())
             {
                 cut.Send("Message");
             }
@@ -75,7 +75,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         {
             SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
 
-            using (var cut = CreateLocalQueue("MyQueue", true, LocaleQueueMode.DurableCreate))
+            using (var cut = CreateLocaleQueue("MyQueue", true, LocaleQueueMode.DurableCreate))
             {
                 cut.Send("Message");
             }
@@ -88,7 +88,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         {
             SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
 
-            using (var cut = CreateLocalQueue())
+            using (var cut = CreateLocaleQueue())
             {
                 cut.Send((MyDto)null);
             }
@@ -101,7 +101,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         {
             SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
 
-            using (var cut = CreateLocalQueue())
+            using (var cut = CreateLocaleQueue())
             {
                 cut.Send(new MyDto());
             }
@@ -114,7 +114,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         {
             SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
 
-            using (var cut = CreateLocalQueue())
+            using (var cut = CreateLocaleQueue())
             {
                 cut.Send(new string('A', 5000000));
             }
@@ -131,7 +131,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
             AddMessageToQueue(new MyDto { I = 1, S = "S" });
 
-            using (var cut = CreateLocalQueue())
+            using (var cut = CreateLocaleQueue())
             {
                 var receiveDte = (MyDto)cut.Receive(1, _cancellationToken).Message;
 
@@ -149,7 +149,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
             AddMessageToQueue(new MyDto { I = 1, S = "S" });
 
-            using (var cut = CreateLocalQueue())
+            using (var cut = CreateLocaleQueue())
             {
                 var dto = cut.Receive(1, _cancellationToken).Message;
 
@@ -171,7 +171,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
             AddMessageToQueue("Hallo");
 
-            using (var cut = CreateLocalQueue())
+            using (var cut = CreateLocaleQueue())
             {
                 var dto = cut.Receive(100000, _cancellationToken).Message;
 
@@ -189,7 +189,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
             AddMessageToQueue(new MyDto { S = "Message" });
 
-            using (var cut = CreateLocalQueue())
+            using (var cut = CreateLocaleQueue())
             {
                 var dto = cut.Receive<MyDto>(100000, _cancellationToken);
 
@@ -205,7 +205,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
             SetQueue(messageQueue, true);
 
-            using (var cut = CreateLocalQueue())
+            using (var cut = CreateLocaleQueue())
             {
                 var dto = cut.Receive<MyDto>(100000, _cancellationToken);
 
@@ -222,7 +222,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
             AddMessageToQueue(new MyDto { S = "Message" });
 
-            using (var cut = CreateLocalQueue())
+            using (var cut = CreateLocaleQueue())
             {
                 Assert.Throws<InvalidMessageTypeReceivedException>(() => cut.Receive<string>(100000, _cancellationToken));
             }
@@ -233,13 +233,13 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         {
             SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
 
-            using (var cut = CreateLocalQueue())
+            using (var cut = CreateLocaleQueue())
             {
                 cut.Receive(10, _cancellationToken).Message.Should().BeNull();
             }
         }
 
-        private IQueue CreateLocalQueue(string queue = "MyQueue", bool privateQueue = true, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster)
+        private IQueue CreateLocaleQueue(string queue = "MyQueue", bool privateQueue = true, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster)
         {
             return new LocaleQueue(_messageQueueManager, queue, privateQueue, localeQueueMode, true);
         }

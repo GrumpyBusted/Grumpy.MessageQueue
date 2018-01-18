@@ -4,14 +4,19 @@
         <id>Grumpy.MessageQueue</id>
         <version>0</version>
         <title>Grumpy.MessageQueue</title>
-        <description>Extended and opinionated API for Microsoft Message Queue (MSMQ)</description>
+        <description>API for Microsoft Message Queue (MSMQ)</description>
         <summary>
-            API for Microsoft Message queue (MSMQ). This API extents the API with:
-            - Larger messages
+            This API extents the API with:
+            - Larger messages (Move the limit from 4MB to the size of a string 1-2GB)
             - Transactional messages with Ack and NAck feature
             - Queue Handler (Listener) to trigger handler method when messages are received
             - Automatic management of queues (Create and Delete)
-            This API only includes a sub set of the features in MSMQ, but the features that are most used (and needed for my other solution). The API makes the use of MSMQ easy and strait forward.
+            - Cancelable Receiver
+            - Async Receiver
+
+            This API includes the features that are most used (and needed for my other solution). The API makes the use
+            of MSMQ easy and strait forward. I know this library is opinionated and only provide a sub set of the features
+            in MSMQ API for Microsoft Message Queue (MSMQ).
         </summary>
         <tags>Message Queue MQ MSMQ</tags>
         <authors>Anders Busted-Janum</authors>
@@ -22,8 +27,8 @@
         <language>en-US</language>
         <copyright>Copyright © Busted-Janum 2018</copyright>
         <dependencies>
-            <dependency id="Grumpy.Common" version="1.1.0" />
-            <dependency id="Grumpy.Json" version="1.1.0" />
+            <dependency id="Grumpy.Common" version="1.2.0" />
+            <dependency id="Grumpy.Json" version="1.2.0" />
         </dependencies>
     </metadata>
     <files>
