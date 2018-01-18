@@ -16,10 +16,11 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
     {
         private readonly IMessageQueueManager _messageQueueManager = new MessageQueueManager();
         private readonly CancellationToken _cancellationToken = new CancellationToken();
+        private readonly IMessageQueueTransactionFactory _messageQueueTransactionFactory = new MessageQueueTransactionFactory();
 
         private ILocaleQueue CreateLocalQueue(string name, bool privateQueue, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster, bool transactional = true)
         {
-            return new LocaleQueue(_messageQueueManager, name, privateQueue, localeQueueMode, transactional);
+            return new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, privateQueue, localeQueueMode, transactional);
         }
 
         [Fact]
@@ -60,7 +61,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
                     queue.Send("Hallo");
                 }
 
-                using (var queue = new LocaleQueue(_messageQueueManager, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
                 {
                     var message = (string)queue.Receive(100, _cancellationToken).Message;
 
@@ -80,12 +81,12 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = new LocaleQueue(_messageQueueManager, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
                 {
                     var stopwatch = new Stopwatch();
                     stopwatch.Start();
                     var task = queue.ReceiveAsync(1000, _cancellationToken);
-                    stopwatch.ElapsedMilliseconds.Should().BeLessThan(100);
+                    stopwatch.ElapsedMilliseconds.Should().BeLessThan(900);
                     task.Result?.Message.Should().BeNull();
                     stopwatch.ElapsedMilliseconds.Should().BeGreaterThan(900);
                 }
@@ -103,7 +104,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = new LocaleQueue(_messageQueueManager, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
                 {
                     queue.Send("Hallo");
                     var stopwatch = new Stopwatch();
@@ -126,7 +127,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = new LocaleQueue(_messageQueueManager, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
                 {
                     var cancellationTokenSource = new CancellationTokenSource();
                     var stopwatch = new Stopwatch();
@@ -160,7 +161,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = new LocaleQueue(_messageQueueManager, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
                 {
                     var cancellationTokenSource = new CancellationTokenSource();
                     var stopwatch = new Stopwatch();
@@ -437,7 +438,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
                     var dto = message.Message;
 
                     stopwatch.Stop();
-                    stopwatch.ElapsedMilliseconds.Should().BeInRange(900, 1500);
+                    stopwatch.ElapsedMilliseconds.Should().BeInRange(900, 1999);
                     dto.Should().BeNull();
                 }
             }

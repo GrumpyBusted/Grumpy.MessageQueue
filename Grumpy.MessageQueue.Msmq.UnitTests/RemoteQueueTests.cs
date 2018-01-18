@@ -11,6 +11,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
     public class RemoteQueueTests
     {
         private readonly IMessageQueueManager _messageQueueManager = Substitute.For<IMessageQueueManager>();
+        private readonly IMessageQueueTransactionFactory _messageQueueTransactionFactory = Substitute.For<IMessageQueueTransactionFactory>();
 
         [Fact]
         public void SendToExistingQueueShouldGetQueueFromServer()
@@ -42,7 +43,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
         private IRemoteQueue CreateRemoteQueue(RemoteQueueMode remoteQueueMode)
         {
-            return new RemoteQueue(_messageQueueManager, "MyServerName", "MyQueue", false, remoteQueueMode, true);
+            return new RemoteQueue(_messageQueueManager, _messageQueueTransactionFactory, "MyServerName", "MyQueue", false, remoteQueueMode, true);
         }
     }
 }

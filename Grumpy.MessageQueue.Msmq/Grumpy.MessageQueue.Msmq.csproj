@@ -48,7 +48,11 @@
     <Compile Include="Extensions\MessageQueueListExtensions.cs" />
     <Compile Include="Extensions\StringMessageFormatter.cs" />
     <Compile Include="Extensions\WaitHandleExtensions.cs" />
+    <Compile Include="Interfaces\IMessageQueueTransaction.cs" />
+    <Compile Include="Interfaces\IMessageQueueTransactionFactory.cs" />
     <Compile Include="Interfaces\IMessageQueueManager.cs" />
+    <Compile Include="MessageQueueTransaction.cs" />
+    <Compile Include="MessageQueueTransactionFactory.cs" />
     <Compile Include="LocaleQueue.cs" />
     <Compile Include="MessageQueueManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

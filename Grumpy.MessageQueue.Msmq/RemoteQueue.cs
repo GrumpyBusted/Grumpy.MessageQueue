@@ -14,7 +14,7 @@ namespace Grumpy.MessageQueue.Msmq
         public string ServerName { get; }
 
         /// <inheritdoc />
-        public RemoteQueue(IMessageQueueManager messageQueueManager, string serverName, string name, bool privateQueue, RemoteQueueMode remoteQueueMode, bool transactional) : base(messageQueueManager, name, privateQueue, remoteQueueMode == RemoteQueueMode.Durable, transactional)
+        public RemoteQueue(IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string serverName, string name, bool privateQueue, RemoteQueueMode remoteQueueMode, bool transactional) : base(messageQueueManager, messageQueueTransactionFactory, name, privateQueue, remoteQueueMode == RemoteQueueMode.Durable, transactional)
         {
             ServerName = serverName;
         }

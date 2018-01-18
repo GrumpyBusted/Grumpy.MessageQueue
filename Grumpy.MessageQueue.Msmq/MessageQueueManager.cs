@@ -96,7 +96,7 @@ namespace Grumpy.MessageQueue.Msmq
         }
 
         /// <inheritdoc />
-        public void Send(System.Messaging.MessageQueue messageQueue, Message message, MessageQueueTransaction messageQueueTransaction)
+        public void Send(System.Messaging.MessageQueue messageQueue, Message message, System.Messaging.MessageQueueTransaction messageQueueTransaction)
         {
             try
             {
@@ -107,12 +107,12 @@ namespace Grumpy.MessageQueue.Msmq
             }
             catch (Exception exception)
             {
-                throw new MessageQueueSendException(messageQueue, message, messageQueueTransaction, exception);
+                throw new MessageQueueSendException(messageQueue, message, exception);
             }
         }
 
         /// <inheritdoc />
-        public Message Receive(System.Messaging.MessageQueue messageQueue, TimeSpan timeout, MessageQueueTransaction messageQueueTransaction)
+        public Message Receive(System.Messaging.MessageQueue messageQueue, TimeSpan timeout, System.Messaging.MessageQueueTransaction messageQueueTransaction)
         {
             try
             {
@@ -123,12 +123,12 @@ namespace Grumpy.MessageQueue.Msmq
                 if (exception is MessageQueueException messageQueueException && messageQueueException.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
                     return null;
 
-                throw new MessageQueueReceiveException(messageQueue, timeout, messageQueueTransaction, exception);
+                throw new MessageQueueReceiveException(messageQueue, timeout, exception);
             }
         }
 
         /// <inheritdoc />
-        public Message ReceiveByCorrelationId(System.Messaging.MessageQueue messageQueue, string correlationId, TimeSpan timeout, MessageQueueTransaction messageQueueTransaction)
+        public Message ReceiveByCorrelationId(System.Messaging.MessageQueue messageQueue, string correlationId, TimeSpan timeout, System.Messaging.MessageQueueTransaction messageQueueTransaction)
         {
             try
             {
@@ -139,7 +139,7 @@ namespace Grumpy.MessageQueue.Msmq
                 if (exception is MessageQueueException messageQueueException && messageQueueException.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
                     return null;
 
-                throw new MessageQueueReceiveException(messageQueue, correlationId, timeout, messageQueueTransaction, exception);
+                throw new MessageQueueReceiveException(messageQueue, correlationId, timeout, exception);
             }
         }
 

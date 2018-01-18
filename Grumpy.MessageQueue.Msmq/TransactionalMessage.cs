@@ -2,6 +2,7 @@
 using System.Messaging;
 using Grumpy.MessageQueue.Interfaces;
 using Grumpy.MessageQueue.Msmq.Dto;
+using Grumpy.MessageQueue.Msmq.Interfaces;
 using Newtonsoft.Json;
 
 namespace Grumpy.MessageQueue.Msmq
@@ -11,7 +12,7 @@ namespace Grumpy.MessageQueue.Msmq
     public class TransactionalMessage : ITransactionalMessage
     {
         private readonly QueueMessage _queueMessage;
-        private readonly MessageQueueTransaction _messageQueueTransaction;
+        private readonly IMessageQueueTransaction _messageQueueTransaction;
         private bool _disposed;
 
         /// <inheritdoc />
@@ -22,7 +23,7 @@ namespace Grumpy.MessageQueue.Msmq
         }
 
         /// <inheritdoc />
-        public TransactionalMessage(QueueMessage queueMessage, MessageQueueTransaction messageQueueTransaction)
+        public TransactionalMessage(QueueMessage queueMessage, IMessageQueueTransaction messageQueueTransaction)
         {
             _queueMessage = queueMessage;
             _messageQueueTransaction = messageQueueTransaction;

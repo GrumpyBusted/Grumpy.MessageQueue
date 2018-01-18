@@ -25,9 +25,10 @@ namespace Grumpy.MessageQueue.Msmq
         private readonly Timer _disconnectTimer;
 
         /// <inheritdoc />
-        protected Queue(IMessageQueueManager messageQueueManager, string name, bool privateQueue, bool durable, bool transactional)
+        protected Queue(IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string name, bool privateQueue, bool durable, bool transactional)
         {
             MessageQueueManager = messageQueueManager;
+            _messageQueueTransactionFactory = messageQueueTransactionFactory;
             Name = name;
             Private = privateQueue;
             Transactional = transactional;
@@ -41,6 +42,8 @@ namespace Grumpy.MessageQueue.Msmq
         /// Message Queue Manager
         /// </summary>
         protected readonly IMessageQueueManager MessageQueueManager;
+
+        private readonly IMessageQueueTransactionFactory _messageQueueTransactionFactory;
 
         private bool _disposed;
 
@@ -328,7 +331,7 @@ namespace Grumpy.MessageQueue.Msmq
             Disconnect();
         }
 
-        private void SendMessage<T>(T message, MessageQueueTransaction messageQueueTransaction)
+        private void SendMessage<T>(T message, IMessageQueueTransaction messageQueueTransaction)
         {
             var jsonSerializerSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
 
@@ -355,7 +358,7 @@ namespace Grumpy.MessageQueue.Msmq
 
                     queueMessage.BodyStream.Write(buffer, 0, bytes);
 
-                    MessageQueueManager.Send(_messageQueue, queueMessage, messageQueueTransaction);
+                    MessageQueueManager.Send(_messageQueue, queueMessage, messageQueueTransaction?.Transaction);
 
                     correlationId = queueMessage.Id;
                 }
@@ -372,7 +375,7 @@ namespace Grumpy.MessageQueue.Msmq
             {
                 using (var memoryStream = new MemoryStream())
                 {
-                    var message = MessageQueueManager.Receive(_messageQueue, TimeSpan.Zero, messageQueueTransaction);
+                    var message = MessageQueueManager.Receive(_messageQueue, TimeSpan.Zero, messageQueueTransaction?.Transaction);
 
                     var messageNumber = 0;
 
@@ -381,7 +384,7 @@ namespace Grumpy.MessageQueue.Msmq
                         message.BodyStream.CopyTo(memoryStream);
 
                         if (messageNumber < message.AppSpecific)
-                            message = MessageQueueManager.ReceiveByCorrelationId(_messageQueue, message.Id, TimeSpan.Zero, messageQueueTransaction);
+                            message = MessageQueueManager.ReceiveByCorrelationId(_messageQueue, message.Id, TimeSpan.Zero, messageQueueTransaction?.Transaction);
                     }
 
                     return CreateTransactionalMessage(memoryStream, messageQueueTransaction);
@@ -396,12 +399,12 @@ namespace Grumpy.MessageQueue.Msmq
             }
         }
 
-        private MessageQueueTransaction CreateTransaction()
+        private IMessageQueueTransaction CreateTransaction()
         {
-            return Transactional ? new MessageQueueTransaction() : null;
+            return Transactional ? _messageQueueTransactionFactory.Create() : null;
         }
 
-        private static ITransactionalMessage CreateTransactionalMessage(Stream stream, MessageQueueTransaction messageQueueTransaction)
+        private static ITransactionalMessage CreateTransactionalMessage(Stream stream, IMessageQueueTransaction messageQueueTransaction)
         {
             stream.Position = 0;
 

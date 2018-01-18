@@ -58,7 +58,7 @@ namespace Grumpy.MessageQueue.Msmq.Interfaces
         /// <param name="messageQueue">The MSMQ Queue</param>
         /// <param name="message">The MSMQ Message</param>
         /// <param name="messageQueueTransaction">Message Queue Transaction</param>
-        void Send(System.Messaging.MessageQueue messageQueue, Message message, MessageQueueTransaction messageQueueTransaction);
+        void Send(System.Messaging.MessageQueue messageQueue, Message message, System.Messaging.MessageQueueTransaction messageQueueTransaction);
 
         /// <summary>
         /// Receive Message from Message Queue on MSMQ
@@ -67,7 +67,7 @@ namespace Grumpy.MessageQueue.Msmq.Interfaces
         /// <param name="timeout">Timeout</param>
         /// <param name="messageQueueTransaction">Message Queue Transaction</param>
         /// <returns>The MSMQ Message, null if not received before timeout</returns>
-        Message Receive(System.Messaging.MessageQueue messageQueue, TimeSpan timeout, MessageQueueTransaction messageQueueTransaction);
+        Message Receive(System.Messaging.MessageQueue messageQueue, TimeSpan timeout, System.Messaging.MessageQueueTransaction messageQueueTransaction);
 
         /// <summary>
         /// Receive Message from Message Queue on MSMQ for specific Correlation Id
@@ -77,7 +77,7 @@ namespace Grumpy.MessageQueue.Msmq.Interfaces
         /// <param name="timeout">Timeout</param>
         /// <param name="messageQueueTransaction">Message Queue Transaction</param>
         /// <returns>The MSMQ Message, null if not received before timeout</returns>
-        Message ReceiveByCorrelationId(System.Messaging.MessageQueue messageQueue, string correlationId, TimeSpan timeout, MessageQueueTransaction messageQueueTransaction);
+        Message ReceiveByCorrelationId(System.Messaging.MessageQueue messageQueue, string correlationId, TimeSpan timeout, System.Messaging.MessageQueueTransaction messageQueueTransaction);
 
         /// <summary>
         /// Start Asynchronous Peek Message from Message Queue on MSMQ

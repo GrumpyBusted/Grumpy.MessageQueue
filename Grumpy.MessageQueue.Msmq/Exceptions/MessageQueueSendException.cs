@@ -18,12 +18,11 @@ namespace Grumpy.MessageQueue.Msmq.Exceptions
         /// <summary>
         /// Message Queue Send Exception
         /// </summary>
-        public MessageQueueSendException(System.Messaging.MessageQueue messageQueue, Message message, MessageQueueTransaction messageQueueTransaction, Exception exception) : base("Message Queue Send Exception", exception)
+        public MessageQueueSendException(System.Messaging.MessageQueue messageQueue, Message message, Exception exception) : base("Message Queue Send Exception", exception)
         {
             Data.Add("QueueName", messageQueue?.QueueName ?? "");
             Data.Add(nameof(messageQueue), messageQueue.TrySerializeToJson());
             Data.Add(nameof(message), message.TrySerializeToJson());
-            Data.Add(nameof(messageQueueTransaction), messageQueueTransaction.TrySerializeToJson());
         }
     }
 }

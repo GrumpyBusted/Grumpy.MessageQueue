@@ -219,7 +219,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
         private string SendMessage(System.Messaging.MessageQueue queue, object body, string correlationId = null)
         {
-            var messageQueueTransaction = new MessageQueueTransaction();
+            var messageQueueTransaction = new System.Messaging.MessageQueueTransaction();
 
             messageQueueTransaction.Begin();
 
@@ -237,7 +237,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
         private Message ReceiveMessage(System.Messaging.MessageQueue queue)
         {
-            var messageQueueTransaction = new MessageQueueTransaction();
+            var messageQueueTransaction = new System.Messaging.MessageQueueTransaction();
 
             messageQueueTransaction.Begin();
 
@@ -250,7 +250,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
         private Message ReceiveMessageByCorrelationId(System.Messaging.MessageQueue queue, string correlationId)
         {
-            var messageQueueTransaction = new MessageQueueTransaction();
+            var messageQueueTransaction = new System.Messaging.MessageQueueTransaction();
 
             messageQueueTransaction.Begin();
 

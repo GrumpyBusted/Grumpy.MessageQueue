@@ -21,11 +21,13 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
     {
         private readonly IMessageQueueManager _messageQueueManager;
         private readonly CancellationToken _cancellationToken;
+        private readonly IMessageQueueTransactionFactory _messageQueueTransactionFactory;
 
         public QueueTests()
         {
             _cancellationToken = new CancellationToken();
             _messageQueueManager = Substitute.For<IMessageQueueManager>();
+            _messageQueueTransactionFactory = Substitute.For<IMessageQueueTransactionFactory>();
             _messageQueueManager.BeginPeek(Arg.Any<System.Messaging.MessageQueue>(), Arg.Any<TimeSpan>()).Returns(e => null as IAsyncResult);
         }
 
@@ -93,7 +95,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
                 cut.Send((MyDto)null);
             }
 
-            _messageQueueManager.Received(1).Send(Arg.Any<System.Messaging.MessageQueue>(), Arg.Any<Message>(), Arg.Any<MessageQueueTransaction>());
+            _messageQueueManager.Received(1).Send(Arg.Any<System.Messaging.MessageQueue>(), Arg.Any<Message>(), Arg.Any<System.Messaging.MessageQueueTransaction>());
         }
 
         [Fact]
@@ -106,7 +108,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
                 cut.Send(new MyDto());
             }
 
-            _messageQueueManager.Received(1).Send(Arg.Any<System.Messaging.MessageQueue>(), Arg.Is<Message>(e => e.AppSpecific == 1 && e.CorrelationId == ""), Arg.Any<MessageQueueTransaction>());
+            _messageQueueManager.Received(1).Send(Arg.Any<System.Messaging.MessageQueue>(), Arg.Is<Message>(e => e.AppSpecific == 1 && e.CorrelationId == ""), Arg.Any<System.Messaging.MessageQueueTransaction>());
         }
 
         [Fact]
@@ -119,7 +121,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
                 cut.Send(new string('A', 5000000));
             }
 
-            _messageQueueManager.Received(2).Send(Arg.Any<System.Messaging.MessageQueue>(), Arg.Is<Message>(e => e.AppSpecific == 2), Arg.Any<MessageQueueTransaction>());
+            _messageQueueManager.Received(2).Send(Arg.Any<System.Messaging.MessageQueue>(), Arg.Is<Message>(e => e.AppSpecific == 2), Arg.Any<System.Messaging.MessageQueueTransaction>());
         }
 
         [Fact]
@@ -241,7 +243,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
         private IQueue CreateLocaleQueue(string queue = "MyQueue", bool privateQueue = true, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster)
         {
-            return new LocaleQueue(_messageQueueManager, queue, privateQueue, localeQueueMode, true);
+            return new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, queue, privateQueue, localeQueueMode, true);
         }
 
         private void SetQueue(System.Messaging.MessageQueue queue, bool exists)
@@ -252,7 +254,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
         private void AddMessageToQueue(object dto)
         {
-            _messageQueueManager.Receive(Arg.Any<System.Messaging.MessageQueue>(), Arg.Any<TimeSpan>(), Arg.Any<MessageQueueTransaction>()).Returns(GetMessage(dto));
+            _messageQueueManager.Receive(Arg.Any<System.Messaging.MessageQueue>(), Arg.Any<TimeSpan>(), Arg.Any<System.Messaging.MessageQueueTransaction>()).Returns(GetMessage(dto));
             _messageQueueManager.BeginPeek(Arg.Any<System.Messaging.MessageQueue>(), Arg.Any<TimeSpan>()).Returns((IAsyncResult)null);
             _messageQueueManager.EndPeek(Arg.Any<System.Messaging.MessageQueue>(), Arg.Any<IAsyncResult>()).Returns(GetMessage(dto));
         }

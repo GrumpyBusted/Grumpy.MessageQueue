@@ -47,7 +47,7 @@ namespace Grumpy.MessageQueue.UnitTests
             ExecuteHandler((m, c) => Thread.Sleep(1000), false);
 
             _stopwatch.Stop();
-            _stopwatch.ElapsedMilliseconds.Should().BeInRange(2500, 3500);
+            _stopwatch.ElapsedMilliseconds.Should().BeInRange(2500, 3800);
         }
         
         [Fact]
