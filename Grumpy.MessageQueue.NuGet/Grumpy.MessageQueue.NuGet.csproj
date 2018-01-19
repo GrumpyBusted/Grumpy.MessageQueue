@@ -53,6 +53,7 @@
   <ItemGroup>
     <None Include="Grumpy.MessageQueue.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
