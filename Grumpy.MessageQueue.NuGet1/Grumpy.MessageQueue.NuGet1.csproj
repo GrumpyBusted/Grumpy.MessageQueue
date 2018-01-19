@@ -7,8 +7,8 @@
     <ProjectGuid>{41DAB58F-5CB3-4DA8-9EAD-08E0BCBB350B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Grumpy.MessageQueue.Nuget</RootNamespace>
-    <AssemblyName>Grumpy.MessageQueue.Nuget</AssemblyName>
+    <RootNamespace>Grumpy.MessageQueue.Msmq.NuGet</RootNamespace>
+    <AssemblyName>Grumpy.MessageQueue.Msmq.NuGet</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

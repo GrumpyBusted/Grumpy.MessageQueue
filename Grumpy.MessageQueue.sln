@@ -30,7 +30,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grumpy.MessageQueue.Msmq.Un
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grumpy.MessageQueue.Msmq", "Grumpy.MessageQueue.Msmq\Grumpy.MessageQueue.Msmq.csproj", "{DF8E5544-3235-4307-8FF5-EC2CAC7A9414}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grumpy.MessageQueue.NuGet", "Grumpy.MessageQueue.Nuget\Grumpy.MessageQueue.NuGet.csproj", "{41DAB58F-5CB3-4DA8-9EAD-08E0BCBB350B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grumpy.MessageQueue.NuGet", "Grumpy.MessageQueue.NuGet\Grumpy.MessageQueue.NuGet.csproj", "{41DAB58F-5CB3-4DA8-9EAD-08E0BCBB350B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
