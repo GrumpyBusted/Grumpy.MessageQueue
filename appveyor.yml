@@ -1,4 +1,11 @@
 version: 1.2.{build}
+skip_commits:
+  message: /NO-BUILD/
+  files:
+    - docs/*
+    - 'appveyor.yml'
+    - 'LICENSE'
+    - 'README.md'
 assembly_info:
   patch: true
   file: '**\AssemblyInfo.cs'

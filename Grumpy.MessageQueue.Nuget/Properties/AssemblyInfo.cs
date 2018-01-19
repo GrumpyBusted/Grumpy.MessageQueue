@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Grumpy.MessageQueue.Nuget")]
+[assembly: AssemblyTitle("Grumpy.MessageQueue.NuGet")]
 [assembly: AssemblyDescription("NuGet container references to all projects that should be packaged in the NuGet package")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Anders Busted-Janum")]

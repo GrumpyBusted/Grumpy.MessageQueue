@@ -1,6 +1,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/kikmu5buw86b2pj0?svg=true)](https://ci.appveyor.com/project/GrumpyBusted/grumpy-messagequeue)
 [![codecov](https://codecov.io/gh/GrumpyBusted/Grumpy.MessageQueue/branch/master/graph/badge.svg)](https://codecov.io/gh/GrumpyBusted/Grumpy.MessageQueue)
 [![nuget](https://img.shields.io/nuget/v/Grumpy.MessageQueue.svg)](https://www.nuget.org/packages/Grumpy.MessageQueue/)
+[![downloads](https://img.shields.io/nuget/dt/Grumpy.MessageQueue.svg)](https://www.nuget.org/packages/Grumpy.MessageQueue/)
 
 # Grumpy.MessageQueue
 API for Microsoft Message Queue (MSMQ).
@@ -17,7 +18,7 @@ This API includes the features that are most used (and needed for my other solut
 of MSMQ easy and strait forward. I know this library is opinionated and only provide a sub set of the features
 in MSMQ API for Microsoft Message Queue (MSMQ).
 
-#### Send and Receive
+## Send and Receive
 The following code sample will:
 - Create a new Private Queue on the current maschine, if not exists
 - Open a connections to the queue
@@ -37,7 +38,7 @@ using (var queue = queueFactory.CreateLocale("MyQueue", true, LocaleQueueMode.Du
 }
 ```
 
-#### Receive and Ack
+## Receive and Ack
 The following code sample will:
 - Receive a transactional message
 - Try to Handle the message in some other method
@@ -60,7 +61,7 @@ using (var queue = queueFactory.CreateLocale("MyQueue", true, LocaleQueueMode.Du
 }
 ```
 
-#### Queue Handler (Listerner)
+## Queue Handler (Listerner)
 The following code sample will:
 - Create a Queue handler
 - Start Listening to a Queue
