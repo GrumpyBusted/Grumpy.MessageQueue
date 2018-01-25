@@ -75,6 +75,27 @@ namespace Grumpy.MessageQueue.IntegrationTests
             _stopwatch.ElapsedMilliseconds.Should().BeLessThan(1500);
         }
 
+        [Fact]
+        public void CanRestartHandler()
+        {
+            using (var cut = new QueueHandler(_queueFactory, _taskFactory))
+            {
+                cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, (m, c) => { c.WaitHandle.WaitOne(2000); }, null, null, 100, true, false, _cancellationToken);
+
+                // ReSharper disable once AccessToDisposedClosure
+                TimerUtility.WaitForIt(() => cut.Idle, 6000);
+
+                cut.Stop();
+
+                cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, (m, c) => { c.WaitHandle.WaitOne(2000); }, null, null, 100, true, false, _cancellationToken);
+
+                // ReSharper disable once AccessToDisposedClosure
+                TimerUtility.WaitForIt(() => cut.Idle, 6000);
+
+                cut.Stop();
+            }
+        }
+
         private void ExecuteHandler(Action<object, CancellationToken> messageHandler, bool multiThreadedHandler)
         {
             using (var cut = new QueueHandler(_queueFactory, _taskFactory))

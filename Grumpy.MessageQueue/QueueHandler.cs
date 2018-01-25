@@ -50,14 +50,11 @@ namespace Grumpy.MessageQueue
         /// <inheritdoc />
         public void Start(string queueName, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional, Action<object, CancellationToken> messageHandler, Action<object, Exception> errorHandler, Action heartbeatHandler, int heartRateMilliseconds, bool multiThreadedHandler, bool syncMode, CancellationToken cancellationToken)
         {
-            if (_cancellationTokenSource != null) 
-                throw new ArgumentException("Start cannot be called Twice");
+            if (_cancellationTokenSource != null)
+                throw new ArgumentException("Handler not stopped");
 
             if (heartRateMilliseconds <= 0 && heartbeatHandler != null)
                 throw new ArgumentException("Invalid Heart Rate", nameof(heartRateMilliseconds));
-
-            if (_queue != null)
-                throw new ArgumentException("Queue handler can only be started once");
 
             _cancellationTokenSource = new CancellationTokenSource();
             _syncMode = syncMode;
@@ -82,11 +79,21 @@ namespace Grumpy.MessageQueue
         public void Stop()
         {
             if (!_cancellationTokenSource?.IsCancellationRequested ?? false)
-            {
                 _cancellationTokenSource?.Cancel();
-                _cancellationTokenSource?.Dispose();
-                _cancellationTokenSource = null;
-            }
+
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
+
+            Parallel.ForEach(_workTasks, t =>
+            {
+                t.Wait();
+                t.Dispose();
+            });
+
+            _processTask?.Dispose();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenRegistration.Dispose();
+            _queue?.Dispose();
         }
 
         /// <inheritdoc />
@@ -99,7 +106,7 @@ namespace Grumpy.MessageQueue
         /// Dispose locale objects
         /// </summary>
         /// <param name="disposing">Disposing</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed")]  
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed")]
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -107,19 +114,7 @@ namespace Grumpy.MessageQueue
                 _disposed = true;
 
                 if (disposing)
-                {
                     Stop();
-
-                    Parallel.ForEach(_workTasks, t => {
-                        t.Wait();
-                        t.Dispose();
-                    });
-
-                    _processTask?.Dispose();
-                    _cancellationTokenSource?.Dispose();
-                    _cancellationTokenRegistration.Dispose();
-                    _queue?.Dispose();
-                }
             }
         }
 

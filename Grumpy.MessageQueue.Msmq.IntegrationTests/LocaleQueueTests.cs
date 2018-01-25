@@ -438,7 +438,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
                     var dto = message.Message;
 
                     stopwatch.Stop();
-                    stopwatch.ElapsedMilliseconds.Should().BeInRange(900, 1999);
+                    stopwatch.ElapsedMilliseconds.Should().BeInRange(900, 1998);
                     dto.Should().BeNull();
                 }
             }
