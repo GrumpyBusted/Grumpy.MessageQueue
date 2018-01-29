@@ -46,9 +46,9 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         }
 
         [Fact]
-        public void SendToNoneExistingQueueShouldNotCallCreate()
+        public void SendToNoneExistingQueueShouldCallCreate()
         {
-            _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(e => false, e => false, e => false, e => true);
+            _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(e => false, e => true);
             _messageQueueManager.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(new System.Messaging.MessageQueue());
 
             using (var cut = CreateLocaleQueue())

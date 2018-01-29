@@ -27,6 +27,9 @@ namespace Grumpy.MessageQueue.Msmq
         /// <inheritdoc />
         protected Queue(IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string name, bool privateQueue, bool durable, bool transactional)
         {
+            if (name.Length > 124) 
+                throw new ArgumentException("Queue name too long", nameof(name));
+
             MessageQueueManager = messageQueueManager;
             _messageQueueTransactionFactory = messageQueueTransactionFactory;
             Name = name;
@@ -309,7 +312,7 @@ namespace Grumpy.MessageQueue.Msmq
         {
             Dispose(false);
         }
-
+        
         /// <summary>
         /// Dispose locale objects
         /// </summary>

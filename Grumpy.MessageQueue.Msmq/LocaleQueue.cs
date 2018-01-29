@@ -21,6 +21,9 @@ namespace Grumpy.MessageQueue.Msmq
         public LocaleQueue(IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string name, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional) : base(messageQueueManager, messageQueueTransactionFactory, name, privateQueue, localeQueueMode.In(LocaleQueueMode.Durable, LocaleQueueMode.DurableCreate), transactional)
         {
             _localeQueueMode = localeQueueMode;
+
+            if (localeQueueMode.In(LocaleQueueMode.DurableCreate, LocaleQueueMode.TemporaryMaster))
+                Connect();
         }
         
         /// <inheritdoc />

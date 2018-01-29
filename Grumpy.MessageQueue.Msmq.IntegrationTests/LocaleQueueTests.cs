@@ -590,6 +590,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
             {
                 using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
                 {
+                    queue.Delete();
                     queue.Create();
                 }
 
@@ -624,7 +625,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
         }
         
         [Fact]
-        public void OnNoneExistingQueueExistShouldReturnFalse()
+        public void OnNoneExistingQueueExistShouldBeCreate()
         {
             var name = $"IntegrationTest_{UniqueKeyUtility.Generate()}";
 
@@ -632,7 +633,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
             {
                 using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
                 {
-                    queue.Exists().Should().BeFalse();
+                    queue.Exists().Should().BeTrue();
                 }
             }
             finally
