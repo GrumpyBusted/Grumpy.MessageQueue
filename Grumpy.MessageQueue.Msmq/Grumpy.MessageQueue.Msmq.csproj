@@ -63,7 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Grumpy.Common">
-      <Version>1.2.3</Version>
+      <Version>1.2.7</Version>
     </PackageReference>
     <PackageReference Include="Grumpy.Json">
       <Version>1.2.3</Version>

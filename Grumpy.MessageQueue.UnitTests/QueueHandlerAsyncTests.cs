@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 using FluentAssertions;
 using Grumpy.Common.Interfaces;
@@ -22,7 +21,6 @@ namespace Grumpy.MessageQueue.UnitTests
         private readonly CancellationToken _cancellationToken;
         private readonly ILocaleQueue _queue;
         private bool _disposed;
-        private readonly Stopwatch _stopwatch;
 
         public QueueHandlerAsyncTests()
         {
@@ -35,8 +33,6 @@ namespace Grumpy.MessageQueue.UnitTests
             
             _cancellationTokenSource = new CancellationTokenSource();
             _cancellationToken = _cancellationTokenSource.Token;
-
-            _stopwatch = new Stopwatch();
         }
         
         [Fact]
@@ -71,17 +67,6 @@ namespace Grumpy.MessageQueue.UnitTests
         private IQueueHandler CreateQueueHandler()
         {
             return new QueueHandler(_queueFactory, _taskFactory);
-        }
-
-        private void ExecuteHandler(Action<object, CancellationToken> messageHandler, bool multiThreadedHandler)
-        {
-            using (var cut = new QueueHandler(_queueFactory, _taskFactory))
-            {
-                cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, messageHandler, null, null, 100, multiThreadedHandler, false, _cancellationToken);
-
-                // ReSharper disable once AccessToDisposedClosure
-                TimerUtility.WaitForIt(() => cut.Idle, 6000);
-            }
         }
 
         private static ITransactionalMessage CreateMessage(object body)

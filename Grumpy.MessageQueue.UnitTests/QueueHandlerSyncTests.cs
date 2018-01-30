@@ -125,11 +125,43 @@ namespace Grumpy.MessageQueue.UnitTests
             transactionalMessage.Received(1).NAck();
         }
 
+        [Fact]
+        public void NonFunctionalHandlerAndTrueFromErrorHandlerShouldAckTransactionalMessage()
+        {
+            var transactionalMessage = CreateMessage("Message1");
+            _queue.Receive(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(e => transactionalMessage, e => null);
+
+            ExecuteHandler((m, c) => throw new Exception(), (o, exception) => true);
+
+            transactionalMessage.Received(1).Ack();
+            transactionalMessage.Received(0).NAck();
+        }
+
+        [Fact]
+        public void NonFunctionalHandlerAndFalseFromErrorHandlerShouldAckTransactionalMessage()
+        {
+            var transactionalMessage = CreateMessage("Message1");
+            _queue.Receive(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(e => transactionalMessage, e => null);
+
+            ExecuteHandler((m, c) => throw new Exception(), (o, exception) => false);
+
+            transactionalMessage.Received(0).Ack();
+            transactionalMessage.Received(1).NAck();
+        }
+
         private void ExecuteHandler(Action<object, CancellationToken> messageHandler, Action<object, Exception> errorHandler = null, Action heartbeatHandler = null)
         {
             using (var cut = CreateQueueHandler())
             {
                 cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, messageHandler, errorHandler, heartbeatHandler, 100, false, true, _cancellationToken);
+            }
+        }
+
+        private void ExecuteHandler(Action<object, CancellationToken> messageHandler, Func<object, Exception, bool> errorHandler)
+        {
+            using (var cut = CreateQueueHandler())
+            {
+                cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, messageHandler, errorHandler, null, 100, false, true, _cancellationToken);
             }
         }
 

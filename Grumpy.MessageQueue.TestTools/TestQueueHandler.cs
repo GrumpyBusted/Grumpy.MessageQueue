@@ -29,6 +29,18 @@ namespace Grumpy.MessageQueue.TestTools
         /// <inheritdoc />
         public void Start(string queueName, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional, Action<object, CancellationToken> messageHandler, Action<object, Exception> errorHandler, Action heartbeatHandler, int heartRateMilliseconds, bool multiThreadedHandler, bool syncMode, CancellationToken cancellationToken)
         {
+            Start(messageHandler, errorHandler, heartbeatHandler, heartRateMilliseconds, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public void Start(string queueName, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional, Action<object, CancellationToken> messageHandler, Func<object, Exception, bool> errorHandler, Action heartbeatHandler, int heartRateMilliseconds, bool multiThreadedHandler, bool syncMode, CancellationToken cancellationToken)
+        {
+            Start(messageHandler, (message, exception) => { errorHandler(message, exception); }, heartbeatHandler, heartRateMilliseconds, cancellationToken);
+        }
+
+        private void Start(Action<object, CancellationToken> messageHandler, Action<object, Exception> errorHandler, Action heartbeatHandler, int heartRateMilliseconds,
+            CancellationToken cancellationToken)
+        {
             if (heartbeatHandler != null)
             {
                 var timerTask = new TimerTask();

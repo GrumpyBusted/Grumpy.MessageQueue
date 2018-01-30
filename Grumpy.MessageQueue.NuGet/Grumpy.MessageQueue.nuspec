@@ -15,7 +15,7 @@
         <language>en-US</language>
         <copyright>Copyright © Busted-Janum 2018</copyright>
         <dependencies>
-            <dependency id="Grumpy.Common" version="1.2.3" />
+            <dependency id="Grumpy.Common" version="1.2.7" />
             <dependency id="Grumpy.Json" version="1.2.3" />
         </dependencies>
     </metadata>

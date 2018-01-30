@@ -23,7 +23,8 @@ namespace Grumpy.MessageQueue
         private CancellationTokenRegistration _cancellationTokenRegistration;
         private IQueue _queue;
         private Action<object, CancellationToken> _messageHandler;
-        private Action<object, Exception> _errorHandler;
+        private Action<object, Exception> _errorHandlerAction;
+        private Func<object, Exception, bool> _errorHandlerFunc;
         private Action _heartbeatHandler;
         private ITask _processTask;
         private int _heartRateMilliseconds;
@@ -50,6 +51,23 @@ namespace Grumpy.MessageQueue
         /// <inheritdoc />
         public void Start(string queueName, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional, Action<object, CancellationToken> messageHandler, Action<object, Exception> errorHandler, Action heartbeatHandler, int heartRateMilliseconds, bool multiThreadedHandler, bool syncMode, CancellationToken cancellationToken)
         {
+            _errorHandlerFunc = null;
+            _errorHandlerAction = errorHandler;
+
+            Start(queueName, privateQueue, localeQueueMode, transactional, messageHandler, heartbeatHandler, heartRateMilliseconds, multiThreadedHandler, syncMode, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public void Start(string queueName, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional, Action<object, CancellationToken> messageHandler, Func<object, Exception, bool> errorHandler, Action heartbeatHandler, int heartRateMilliseconds, bool multiThreadedHandler, bool syncMode, CancellationToken cancellationToken)
+        {
+            _errorHandlerFunc = errorHandler;
+            _errorHandlerAction = null;
+
+            Start(queueName, privateQueue, localeQueueMode, transactional, messageHandler, heartbeatHandler, heartRateMilliseconds, multiThreadedHandler, syncMode, cancellationToken);
+        }
+
+        private void Start(string queueName, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional, Action<object, CancellationToken> messageHandler, Action heartbeatHandler, int heartRateMilliseconds, bool multiThreadedHandler, bool syncMode, CancellationToken cancellationToken)
+        {
             if (_cancellationTokenSource != null)
                 throw new ArgumentException("Handler not stopped");
 
@@ -60,7 +78,6 @@ namespace Grumpy.MessageQueue
             _syncMode = syncMode;
             _queue = _queueFactory.CreateLocale(queueName, privateQueue, localeQueueMode, transactional);
             _messageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
-            _errorHandler = errorHandler;
             _heartbeatHandler = heartbeatHandler;
             _heartRateMilliseconds = heartRateMilliseconds;
             _multiThreadedHandler = multiThreadedHandler;
@@ -198,17 +215,28 @@ namespace Grumpy.MessageQueue
         {
             try
             {
-                _errorHandler?.Invoke(message.Message, exception);
-
-                if (_errorHandler == null)
-                    message.NAck();
-                else
+                if (CallErrorHandler(message.Message, exception))
                     message.Ack();
+                else
+                    message.NAck();
             }
             catch
             {
                 message.NAck();
             }
+        }
+
+        private bool CallErrorHandler(object message, Exception exception)
+        {
+            if (_errorHandlerFunc != null)
+                return _errorHandlerFunc(message, exception);
+
+            if (_errorHandlerAction == null)
+                return false;
+
+            _errorHandlerAction(message, exception);
+
+            return true;
         }
 
         private void Heartbeat()
@@ -257,7 +285,7 @@ namespace Grumpy.MessageQueue
                     foreach (var task in _workTasks.Where(t => t.IsCompleted || t.IsFaulted))
                     {
                         if (task.IsFaulted)
-                            _errorHandler?.Invoke(task.AsyncState, task.Exception);
+                            CallErrorHandler(task.AsyncState, task.Exception);
 
                         task.Dispose();
                     }

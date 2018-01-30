@@ -8,7 +8,7 @@ namespace Grumpy.MessageQueue.Msmq
     public class QueueFactory : IQueueFactory
     {
         private readonly IMessageQueueManager _messageQueueManager;
-        private IMessageQueueTransactionFactory _messageQueueTransactionFactory;
+        private readonly IMessageQueueTransactionFactory _messageQueueTransactionFactory;
 
         /// <inheritdoc />
         public QueueFactory()
