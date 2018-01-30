@@ -2,6 +2,7 @@
 using Grumpy.MessageQueue.Enum;
 using Grumpy.MessageQueue.Msmq.Exceptions;
 using Grumpy.MessageQueue.Msmq.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Grumpy.MessageQueue.Msmq.IntegrationTests
@@ -14,7 +15,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
         [Fact]
         public void SendToNoneExistingRemoteQueueShouldThrowException()
         {
-            using (var queue = new RemoteQueue(_messageQueueManager, _messageQueueTransactionFactory, "Test", $"IntegrationTest_{UniqueKeyUtility.Generate()}", false, RemoteQueueMode.Durable, true))
+            using (var queue = new RemoteQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, "Test", $"IntegrationTest_{UniqueKeyUtility.Generate()}", false, RemoteQueueMode.Durable, true))
             {
                 Assert.Throws<QueueMissingException>(() => queue.Send("Hallo"));
             }

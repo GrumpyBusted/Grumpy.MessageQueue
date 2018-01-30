@@ -5,9 +5,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Grumpy.Common.Interfaces;
+using Grumpy.Logging;
 using Grumpy.MessageQueue.Enum;
 using Grumpy.MessageQueue.Exceptions;
 using Grumpy.MessageQueue.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Grumpy.MessageQueue
 {
@@ -15,6 +17,7 @@ namespace Grumpy.MessageQueue
     // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
     public class QueueHandler : IQueueHandler
     {
+        private readonly ILogger _logger;
         private readonly IQueueFactory _queueFactory;
         private readonly ITaskFactory _taskFactory;
         private readonly List<ITask> _workTasks;
@@ -33,12 +36,14 @@ namespace Grumpy.MessageQueue
         private bool _messageReceived;
         private bool _syncMode;
         private bool _disposed;
+        private string _queueName;
 
         /// <inheritdoc />
-        public QueueHandler(IQueueFactory queueFactory, ITaskFactory taskFactory)
+        public QueueHandler(ILogger logger, IQueueFactory queueFactory, ITaskFactory taskFactory)
         {
             _queueFactory = queueFactory;
             _taskFactory = taskFactory;
+            _logger = logger;
 
             _workTasks = new List<ITask>();
             _heartRateMonitor = new Stopwatch();
@@ -74,9 +79,10 @@ namespace Grumpy.MessageQueue
             if (heartRateMilliseconds <= 0 && heartbeatHandler != null)
                 throw new ArgumentException("Invalid Heart Rate", nameof(heartRateMilliseconds));
 
+            _queueName = queueName;
             _cancellationTokenSource = new CancellationTokenSource();
             _syncMode = syncMode;
-            _queue = _queueFactory.CreateLocale(queueName, privateQueue, localeQueueMode, transactional);
+            _queue = _queueFactory.CreateLocale(_queueName, privateQueue, localeQueueMode, transactional);
             _messageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
             _heartbeatHandler = heartbeatHandler;
             _heartRateMilliseconds = heartRateMilliseconds;
@@ -90,6 +96,8 @@ namespace Grumpy.MessageQueue
                 _processTask = _taskFactory.Create();
                 _processTask.Start(Process, _cancellationTokenSource.Token);
             }
+
+            _logger.Information($"Queue Handler started {_queueName}");
         }
 
         /// <inheritdoc />
@@ -111,6 +119,8 @@ namespace Grumpy.MessageQueue
             _cancellationTokenSource?.Dispose();
             _cancellationTokenRegistration.Dispose();
             _queue?.Dispose();
+
+            _logger.Information($"Queue Handler stopped {_queueName}");
         }
 
         /// <inheritdoc />
@@ -161,6 +171,8 @@ namespace Grumpy.MessageQueue
             }
             catch (Exception exception)
             {
+                _logger.Warning(exception, $"Error processing queue handler {_queueName}");
+
                 if (_syncMode)
                     throw new QueueHandlerProcessException(exception);
 
@@ -195,10 +207,14 @@ namespace Grumpy.MessageQueue
         {
             if (message is ITransactionalMessage transactionalMessage)
                 Handler(transactionalMessage);
+            else
+                _logger.Warning("Invalid message type received {QueueName} {Type} {@Message}", _queueName, message.GetType().FullName, message);
         }
 
         private void Handler(ITransactionalMessage message)
         {
+            _logger.Debug("Handler called {QueueName} {@Message}", _queueName, message);
+
             try
             {
                 _messageHandler(message.Message, _cancellationTokenSource.Token);
@@ -213,6 +229,8 @@ namespace Grumpy.MessageQueue
 
         private void ErrorHandler(ITransactionalMessage message, Exception exception)
         {
+            _logger.Debug(exception, "Error Handler called {QueueName} {@Message}", _queueName, message);
+
             try
             {
                 if (CallErrorHandler(message.Message, exception))
@@ -220,8 +238,10 @@ namespace Grumpy.MessageQueue
                 else
                     message.NAck();
             }
-            catch
+            catch(Exception ex)
             {
+                _logger.Information(ex, "Exception in Error Handler {QueueName} {@Message} {@Exception}", _queueName, message, exception);
+
                 message.NAck();
             }
         }
@@ -241,13 +261,15 @@ namespace Grumpy.MessageQueue
 
         private void Heartbeat()
         {
+            _logger.Debug("Heartbeat Handler called {QueueName}", _queueName);
+
             try
             {
                 _heartbeatHandler?.Invoke();
             }
-            catch
+            catch(Exception exception)
             {
-                // ignored
+                _logger.Warning(exception, $"Error in Heartbeat Handler {_queueName}");
             }
 
             _heartRateMonitor?.Restart();
@@ -272,6 +294,8 @@ namespace Grumpy.MessageQueue
             }
             catch (Exception exception)
             {
+                _logger.Warning(exception, "Error starting handler task {QueueName} {@Message}", _queueName, message);
+
                 ErrorHandler(message, new TaskCreationException(exception));
             }
         }
@@ -280,6 +304,8 @@ namespace Grumpy.MessageQueue
         {
             if (_numberOfException == 0)
             {
+                _logger.Debug("Cleaning up dead tasks {QueueName}", _queueName);
+
                 try
                 {
                     foreach (var task in _workTasks.Where(t => t.IsCompleted || t.IsFaulted))
@@ -292,9 +318,9 @@ namespace Grumpy.MessageQueue
 
                     _workTasks.RemoveAll(t => t.IsCompleted || t.IsFaulted);
                 }
-                catch
+                catch(Exception exception)
                 {
-                    // ignored
+                    _logger.Warning(exception, "Error in cleaning up dead tasks {QueueName}", _queueName);
                 }
             }
         }

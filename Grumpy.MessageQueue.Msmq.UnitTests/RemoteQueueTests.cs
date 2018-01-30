@@ -3,6 +3,8 @@ using FluentAssertions;
 using Grumpy.MessageQueue.Enum;
 using Grumpy.MessageQueue.Interfaces;
 using Grumpy.MessageQueue.Msmq.Interfaces;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
 
@@ -12,6 +14,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
     {
         private readonly IMessageQueueManager _messageQueueManager = Substitute.For<IMessageQueueManager>();
         private readonly IMessageQueueTransactionFactory _messageQueueTransactionFactory = Substitute.For<IMessageQueueTransactionFactory>();
+        private readonly ILogger _logger = NullLogger.Instance;
 
         [Fact]
         public void SendToExistingQueueShouldGetQueueFromServer()
@@ -43,7 +46,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
         private IRemoteQueue CreateRemoteQueue(RemoteQueueMode remoteQueueMode)
         {
-            return new RemoteQueue(_messageQueueManager, _messageQueueTransactionFactory, "MyServerName", "MyQueue", false, remoteQueueMode, true);
+            return new RemoteQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, "MyServerName", "MyQueue", false, remoteQueueMode, true);
         }
     }
 }

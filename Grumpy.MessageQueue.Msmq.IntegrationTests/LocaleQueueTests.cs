@@ -9,6 +9,7 @@ using Grumpy.MessageQueue.Msmq.Exceptions;
 using Grumpy.MessageQueue.Msmq.IntegrationTests.Helper;
 using Grumpy.MessageQueue.Msmq.Interfaces;
 using Xunit;
+using NullLogger = Microsoft.Extensions.Logging.Abstractions.NullLogger;
 
 namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 {
@@ -20,7 +21,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
         private ILocaleQueue CreateLocalQueue(string name, bool privateQueue, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster, bool transactional = true)
         {
-            return new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, privateQueue, localeQueueMode, transactional);
+            return new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, privateQueue, localeQueueMode, transactional);
         }
 
         [Fact]
@@ -61,7 +62,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
                     queue.Send("Hallo");
                 }
 
-                using (var queue = new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
                 {
                     var message = (string)queue.Receive(100, _cancellationToken).Message;
 
@@ -81,7 +82,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
                 {
                     var stopwatch = new Stopwatch();
                     stopwatch.Start();
@@ -104,7 +105,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
                 {
                     queue.Send("Hallo");
                     var stopwatch = new Stopwatch();
@@ -127,7 +128,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
                 {
                     var cancellationTokenSource = new CancellationTokenSource();
                     var stopwatch = new Stopwatch();
@@ -161,7 +162,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
                 {
                     var cancellationTokenSource = new CancellationTokenSource();
                     var stopwatch = new Stopwatch();

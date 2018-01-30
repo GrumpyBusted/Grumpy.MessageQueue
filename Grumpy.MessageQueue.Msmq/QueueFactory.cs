@@ -1,18 +1,21 @@
 ﻿using Grumpy.MessageQueue.Enum;
 using Grumpy.MessageQueue.Interfaces;
 using Grumpy.MessageQueue.Msmq.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Grumpy.MessageQueue.Msmq
 {
     /// <inheritdoc />
     public class QueueFactory : IQueueFactory
     {
+        private readonly ILogger _logger;
         private readonly IMessageQueueManager _messageQueueManager;
         private readonly IMessageQueueTransactionFactory _messageQueueTransactionFactory;
 
         /// <inheritdoc />
-        public QueueFactory()
+        public QueueFactory(ILogger logger)
         {
+            _logger = logger;
             _messageQueueManager = new MessageQueueManager();
             _messageQueueTransactionFactory = new MessageQueueTransactionFactory();
         }
@@ -20,13 +23,13 @@ namespace Grumpy.MessageQueue.Msmq
         /// <inheritdoc />
         public ILocaleQueue CreateLocale(string name, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional)
         {
-            return new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, name, privateQueue, localeQueueMode, transactional);
+            return new LocaleQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, name, privateQueue, localeQueueMode, transactional);
         }
 
         /// <inheritdoc />
         public IRemoteQueue CreateRemote(string serverName, string name, bool privateQueue, RemoteQueueMode remoteQueueMode, bool transactional)
         {
-            return new RemoteQueue(_messageQueueManager, _messageQueueTransactionFactory, serverName, name, privateQueue, remoteQueueMode, transactional);
+            return new RemoteQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, serverName, name, privateQueue, remoteQueueMode, transactional);
         }
     }
 }

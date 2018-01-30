@@ -1,12 +1,16 @@
 ﻿using FluentAssertions;
 using Grumpy.MessageQueue.Enum;
 using Grumpy.MessageQueue.Interfaces;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Grumpy.MessageQueue.Msmq.UnitTests
 {
     public class MessageQueueFactoryTests
     {
+        private static readonly ILogger Logger = NullLogger.Instance;
+
         [Fact]
         public void MessageQueueFactoryCanCreateLocaleInstance()
         {
@@ -28,7 +32,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
         private static IQueueFactory CreateQueueFactory()
         {
-            return new QueueFactory();
+            return new QueueFactory(Logger);
         }
     }
 }

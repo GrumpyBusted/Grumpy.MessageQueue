@@ -7,6 +7,7 @@ using Grumpy.Common.Threading;
 using Grumpy.Json;
 using Grumpy.MessageQueue.Enum;
 using Grumpy.MessageQueue.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
@@ -78,7 +79,7 @@ namespace Grumpy.MessageQueue.IntegrationTests
         [Fact]
         public void CanRestartHandler()
         {
-            using (var cut = new QueueHandler(_queueFactory, _taskFactory))
+            using (var cut = new QueueHandler(NullLogger.Instance, _queueFactory, _taskFactory))
             {
                 cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, (m, c) => { c.WaitHandle.WaitOne(2000); }, null, null, 100, true, false, _cancellationToken);
 
@@ -98,7 +99,7 @@ namespace Grumpy.MessageQueue.IntegrationTests
 
         private void ExecuteHandler(Action<object, CancellationToken> messageHandler, bool multiThreadedHandler)
         {
-            using (var cut = new QueueHandler(_queueFactory, _taskFactory))
+            using (var cut = new QueueHandler(NullLogger.Instance, _queueFactory, _taskFactory))
             {
                 cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, messageHandler, null, null, 100, multiThreadedHandler, false, _cancellationToken);
 

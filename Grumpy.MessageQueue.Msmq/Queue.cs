@@ -5,12 +5,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Grumpy.Json;
+using Grumpy.Logging;
 using Grumpy.MessageQueue.Enum;
 using Grumpy.MessageQueue.Interfaces;
 using Grumpy.MessageQueue.Msmq.Dto;
 using Grumpy.MessageQueue.Msmq.Exceptions;
 using Grumpy.MessageQueue.Msmq.Extensions;
 using Grumpy.MessageQueue.Msmq.Interfaces;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Grumpy.MessageQueue.Msmq
@@ -24,12 +26,18 @@ namespace Grumpy.MessageQueue.Msmq
         private readonly object _messageQueueLock;
         private readonly Timer _disconnectTimer;
 
+        /// <summary>
+        /// The logger
+        /// </summary>
+        protected readonly ILogger Logger;
+
         /// <inheritdoc />
-        protected Queue(IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string name, bool privateQueue, bool durable, bool transactional)
+        protected Queue(ILogger logger, IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string name, bool privateQueue, bool durable, bool transactional)
         {
             if (name.Length > 124) 
                 throw new ArgumentException("Queue name too long", nameof(name));
 
+            Logger = logger;
             MessageQueueManager = messageQueueManager;
             _messageQueueTransactionFactory = messageQueueTransactionFactory;
             Name = name;
@@ -94,10 +102,14 @@ namespace Grumpy.MessageQueue.Msmq
                         }
                     }
 
+                    Logger.Warning("Unable to count messages {@Queue}", this);
+
                     return -1;
                 }
-                catch (Exception)
+                catch (Exception exception)
                 {
+                    Logger.Warning(exception, "Unable to count messages {@Queue}", this);
+
                     return -1;
                 }
             }
@@ -140,6 +152,8 @@ namespace Grumpy.MessageQueue.Msmq
                                 throw new ArgumentOutOfRangeException(nameof(_accessMode), _accessMode, "Unknown Access Mode");
                         }
                     }
+
+                    Logger.Debug("Connected to Message Queue {@Queue}", this);
                 }
 
                 if (_messageQueue == null)
@@ -172,6 +186,8 @@ namespace Grumpy.MessageQueue.Msmq
                 _messageQueue = null;
 
                 _accessMode = AccessMode.None;
+
+                Logger.Debug("Disconnect from Message Queue {@Queue}", this);
             }
         }
 
@@ -284,8 +300,7 @@ namespace Grumpy.MessageQueue.Msmq
             if (message != null)
             {
                 if (message.Type != null && message.Type != typeof(T))
-                    throw new InvalidMessageTypeReceivedException(Name, Private, message.Message, typeof(T),
-                        message.Type);
+                    throw new InvalidMessageTypeReceivedException(Name, Private, message.Message, typeof(T), message.Type);
 
                 if (message.Message is T res)
                 {

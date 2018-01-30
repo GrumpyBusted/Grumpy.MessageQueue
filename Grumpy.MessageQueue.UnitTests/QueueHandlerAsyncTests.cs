@@ -6,6 +6,7 @@ using Grumpy.Common.Threading;
 using Grumpy.Json;
 using Grumpy.MessageQueue.Enum;
 using Grumpy.MessageQueue.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
@@ -66,7 +67,7 @@ namespace Grumpy.MessageQueue.UnitTests
 
         private IQueueHandler CreateQueueHandler()
         {
-            return new QueueHandler(_queueFactory, _taskFactory);
+            return new QueueHandler(NullLogger.Instance, _queueFactory, _taskFactory);
         }
 
         private static ITransactionalMessage CreateMessage(object body)

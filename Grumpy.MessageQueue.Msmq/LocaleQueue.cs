@@ -2,10 +2,12 @@
 using System.Messaging;
 using System.Threading;
 using Grumpy.Common.Extensions;
+using Grumpy.Logging;
 using Grumpy.MessageQueue.Enum;
 using Grumpy.MessageQueue.Interfaces;
 using Grumpy.MessageQueue.Msmq.Exceptions;
 using Grumpy.MessageQueue.Msmq.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Grumpy.MessageQueue.Msmq
 {
@@ -18,7 +20,7 @@ namespace Grumpy.MessageQueue.Msmq
         private bool _disposed;
 
         /// <inheritdoc />
-        public LocaleQueue(IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string name, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional) : base(messageQueueManager, messageQueueTransactionFactory, name, privateQueue, localeQueueMode.In(LocaleQueueMode.Durable, LocaleQueueMode.DurableCreate), transactional)
+        public LocaleQueue(ILogger logger, IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string name, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional) : base(logger, messageQueueManager, messageQueueTransactionFactory, name, privateQueue, localeQueueMode.In(LocaleQueueMode.Durable, LocaleQueueMode.DurableCreate), transactional)
         {
             _localeQueueMode = localeQueueMode;
 
@@ -48,12 +50,16 @@ namespace Grumpy.MessageQueue.Msmq
         public void Create()
         {
             MessageQueueManager.Create(Name, Private, Transactional);
+
+            Logger.Debug($"Queue Created {Name} {Private} {Transactional}");
         }
 
         /// <inheritdoc />
         public void Delete()
         {
             MessageQueueManager.Delete(Name, Private);
+
+            Logger.Debug($"Queue deleted {Name} {Private} {Transactional}");
         }
 
         /// <inheritdoc />
@@ -102,6 +108,7 @@ namespace Grumpy.MessageQueue.Msmq
                             mutex.ReleaseMutex();
                         }
                     }
+                    Logger.Information($"Durable queue created {Name} {Private}");
 
                     break;
                 case LocaleQueueMode.TemporaryMaster:

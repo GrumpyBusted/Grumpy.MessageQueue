@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Grumpy.MessageQueue.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace Grumpy.MessageQueue.UnitTests
 
         private static IQueueHandlerFactory CreateCut()
         {
-            return new QueueHandlerFactory(Substitute.For<IQueueFactory>());
+            return new QueueHandlerFactory(NullLogger.Instance, Substitute.For<IQueueFactory>());
         }
     }
 }

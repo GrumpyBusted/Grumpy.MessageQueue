@@ -2,6 +2,7 @@
 using Grumpy.MessageQueue.Enum;
 using Grumpy.MessageQueue.Interfaces;
 using Grumpy.MessageQueue.Msmq.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Grumpy.MessageQueue.Msmq
 {
@@ -14,7 +15,7 @@ namespace Grumpy.MessageQueue.Msmq
         public string ServerName { get; }
 
         /// <inheritdoc />
-        public RemoteQueue(IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string serverName, string name, bool privateQueue, RemoteQueueMode remoteQueueMode, bool transactional) : base(messageQueueManager, messageQueueTransactionFactory, name, privateQueue, remoteQueueMode == RemoteQueueMode.Durable, transactional)
+        public RemoteQueue(ILogger logger, IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string serverName, string name, bool privateQueue, RemoteQueueMode remoteQueueMode, bool transactional) : base(logger, messageQueueManager, messageQueueTransactionFactory, name, privateQueue, remoteQueueMode == RemoteQueueMode.Durable, transactional)
         {
             ServerName = serverName;
         }

@@ -68,6 +68,9 @@
     <PackageReference Include="Grumpy.Json">
       <Version>1.2.3</Version>
     </PackageReference>
+    <PackageReference Include="Grumpy.Logging">
+      <Version>0.9.2</Version>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>10.0.3</Version>
     </PackageReference>

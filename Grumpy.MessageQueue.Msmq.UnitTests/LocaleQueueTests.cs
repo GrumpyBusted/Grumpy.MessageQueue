@@ -10,6 +10,8 @@ using Grumpy.MessageQueue.Interfaces;
 using Grumpy.MessageQueue.Msmq.Dto;
 using Grumpy.MessageQueue.Msmq.Interfaces;
 using Grumpy.MessageQueue.Msmq.UnitTests.Helper;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
@@ -21,6 +23,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         private readonly IMessageQueueManager _messageQueueManager = Substitute.For<IMessageQueueManager>();
         private readonly CancellationToken _cancellationToken = new CancellationToken();
         private readonly IMessageQueueTransactionFactory _messageQueueTransactionFactory = Substitute.For<IMessageQueueTransactionFactory>();
+        private readonly ILogger _logger = NullLogger.Instance;
 
         [Fact]
         public void GetLocaleQueueWithCreateModeAutoShouldCreateQueue()
@@ -227,7 +230,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
         private ILocaleQueue CreateLocalQueue(string queue, bool privateQueue = true, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster)
         {
-            return new LocaleQueue(_messageQueueManager, _messageQueueTransactionFactory, queue, privateQueue, localeQueueMode, true);
+            return new LocaleQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, queue, privateQueue, localeQueueMode, true);
         }
 
         private void SetQueue(System.Messaging.MessageQueue queue, bool exists)
