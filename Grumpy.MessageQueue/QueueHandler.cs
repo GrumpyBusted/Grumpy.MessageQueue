@@ -192,8 +192,10 @@ namespace Grumpy.MessageQueue
                 if (_messageReceived)
                     return transactionalMessage;
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                _logger.Information(exception, $"Exception receiving message, retry count {_numberOfException}");
+
                 _messageReceived = false;
 
                 if (++_numberOfException >= 3)
@@ -320,7 +322,7 @@ namespace Grumpy.MessageQueue
                 }
                 catch(Exception exception)
                 {
-                    _logger.Warning(exception, "Error in cleaning up dead tasks {QueueName}", _queueName);
+                    _logger.Information(exception, "Error in cleaning up dead tasks {QueueName}", _queueName);
                 }
             }
         }
