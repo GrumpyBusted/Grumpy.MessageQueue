@@ -25,7 +25,7 @@ namespace Grumpy.MessageQueue.Msmq
             _localeQueueMode = localeQueueMode;
 
             if (localeQueueMode.In(LocaleQueueMode.DurableCreate, LocaleQueueMode.TemporaryMaster))
-                Connect();
+                CreateQueue();
         }
         
         /// <inheritdoc />

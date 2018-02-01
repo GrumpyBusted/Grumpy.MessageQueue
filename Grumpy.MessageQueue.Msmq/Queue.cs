@@ -129,11 +129,11 @@ namespace Grumpy.MessageQueue.Msmq
                 if (_accessMode != accessMode && _messageQueue != null)
                     Disconnect();
 
-                if (_messageQueue == null)
+                if (_accessMode != accessMode || _messageQueue == null)
                 {
                     _accessMode = accessMode;
 
-                    _messageQueue = GetQueue(accessMode);
+                    _messageQueue = GetQueue(_accessMode);
 
                     if (_messageQueue != null)
                     {
