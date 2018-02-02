@@ -106,7 +106,7 @@ namespace Grumpy.MessageQueue.Msmq
                             {
                                 Create();
 
-                                Logger.Information($"Durable queue created {Name} {Private}");
+                                Logger.Information("Durable queue created {Name} {Private}", Name, Private);
                             }
 
                             mutex.ReleaseMutex();

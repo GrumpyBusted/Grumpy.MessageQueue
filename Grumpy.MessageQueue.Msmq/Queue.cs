@@ -358,7 +358,7 @@ namespace Grumpy.MessageQueue.Msmq
                 int bytes;
                 var chunk = 0;
 
-                Logger.Debug("Sending message in {Chunks} Chucks on {QueueName} ({Transactional})", numberOfChunks, Name, Transactional ? "Transactional" : "Non-Transactional");
+                Logger.Debug("Sending message in {Chunks} Chucks on {QueueName} {Transactional}", numberOfChunks, Name, Transactional);
                 Logger.Debug($"Message: {body}");
 
                 if (!Transactional && numberOfChunks > 1)
