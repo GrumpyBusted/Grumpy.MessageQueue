@@ -21,9 +21,9 @@ namespace Grumpy.MessageQueue.Msmq
         }
 
         /// <inheritdoc />
-        protected override System.Messaging.MessageQueue GetQueue(AccessMode accessMode)
+        protected override System.Messaging.MessageQueue GetQueue(QueueMode queueMode)
         {
-            return MessageQueueManager.Get(ServerName, Name, Private, accessMode == AccessMode.Receive ? QueueAccessMode.Receive : accessMode == AccessMode.Send ? QueueAccessMode.Send : QueueAccessMode.SendAndReceive);
+            return MessageQueueManager.Get(ServerName, Name, Private, queueMode == QueueMode.Receive ? QueueAccessMode.Receive : queueMode == QueueMode.Send ? QueueAccessMode.Send : QueueAccessMode.SendAndReceive);
         }
 
         /// <inheritdoc />

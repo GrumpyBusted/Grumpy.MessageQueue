@@ -36,8 +36,8 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
                 using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
                 {
                     queue.Disconnect();
-                    queue.Connect(AccessMode.Send);
-                    queue.Reconnect(AccessMode.Send);
+                    queue.Connect(QueueMode.Send);
+                    queue.Reconnect(QueueMode.Send);
                     queue.Disconnect();
                     queue.Connect();
                     queue.Reconnect();
@@ -330,7 +330,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
                     queue.Reconnect();
                     _messageQueueManager.Exists(name, true).Should().BeTrue();
                     queue.Disconnect();
-                    queue.Connect(AccessMode.Receive);
+                    queue.Connect(QueueMode.Receive);
                     _messageQueueManager.Exists(name, true).Should().BeTrue();
                 }
             }

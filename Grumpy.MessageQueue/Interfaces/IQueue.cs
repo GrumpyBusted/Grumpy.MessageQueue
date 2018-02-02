@@ -44,8 +44,8 @@ namespace Grumpy.MessageQueue.Interfaces
         /// <summary>
         /// Connect to Message Queue
         /// </summary>
-        /// <param name="accessMode">Queue Access Mode</param>
-        void Connect(AccessMode accessMode);
+        /// <param name="queueMode">Queue Access Mode</param>
+        void Connect(QueueMode queueMode);
 
         /// <summary>
         /// Reconnect to Message Queue
@@ -55,8 +55,8 @@ namespace Grumpy.MessageQueue.Interfaces
         /// <summary>
         /// Reconnect to Message Queue
         /// </summary>
-        /// <param name="accessMode">Queue Access Mode</param>
-        void Reconnect(AccessMode accessMode);
+        /// <param name="queueMode">Queue Access Mode</param>
+        void Reconnect(QueueMode queueMode);
         
         /// <summary>
         /// Disconnect from Message Queue

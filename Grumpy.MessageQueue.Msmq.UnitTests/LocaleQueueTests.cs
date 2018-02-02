@@ -33,7 +33,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
             using (var cut = CreateLocalQueue("MyQueue"))
             {
-                cut.Connect(AccessMode.Receive);
+                cut.Connect(QueueMode.Receive);
             }
 
             _messageQueueManager.Received(1).Create(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<bool>());
@@ -47,7 +47,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
             using (var cut = CreateLocalQueue("MyQueue", true, LocaleQueueMode.DurableCreate))
             {
-                cut.Connect(AccessMode.Receive);
+                cut.Connect(QueueMode.Receive);
             }
 
             _messageQueueManager.Received(1).Create(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<bool>());

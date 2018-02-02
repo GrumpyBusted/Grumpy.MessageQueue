@@ -29,20 +29,20 @@ namespace Grumpy.MessageQueue.Msmq
         }
         
         /// <inheritdoc />
-        public override void Connect(AccessMode accessMode)
+        public override void Connect(QueueMode queueMode)
         {
             try
             {
                 if (!Exists())
                     CreateQueue();
 
-                base.Connect(accessMode);
+                base.Connect(queueMode);
             }
             catch (QueueMissingException)
             {
                 CreateQueue();
 
-                base.Connect(accessMode);
+                base.Connect(queueMode);
             }
         }
 
@@ -69,9 +69,9 @@ namespace Grumpy.MessageQueue.Msmq
         }
 
         /// <inheritdoc />
-        protected override System.Messaging.MessageQueue GetQueue(AccessMode accessMode)
+        protected override System.Messaging.MessageQueue GetQueue(QueueMode queueMode)
         {
-            return MessageQueueManager.Get(".", Name, Private, accessMode == AccessMode.Receive ? QueueAccessMode.Receive : accessMode == AccessMode.Send ? QueueAccessMode.Send : QueueAccessMode.SendAndReceive);
+            return MessageQueueManager.Get(".", Name, Private, queueMode == QueueMode.Receive ? QueueAccessMode.Receive : queueMode == QueueMode.Send ? QueueAccessMode.Send : QueueAccessMode.SendAndReceive);
         }
 
         /// <inheritdoc />

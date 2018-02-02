@@ -22,7 +22,7 @@ namespace Grumpy.MessageQueue.Msmq
     {
         private const int MaxMsmqMessageSize = 4096000;
         private System.Messaging.MessageQueue _messageQueue;
-        private AccessMode _accessMode;
+        private QueueMode _queueMode;
         private readonly object _messageQueueLock;
         private readonly Timer _disconnectTimer;
 
@@ -44,7 +44,7 @@ namespace Grumpy.MessageQueue.Msmq
             Private = privateQueue;
             Transactional = transactional;
             Durable = durable;
-            _accessMode = AccessMode.None;
+            _queueMode = QueueMode.None;
             _messageQueueLock = new object();
             _disconnectTimer = new Timer(Disconnect, null, 3600000, 3600000);
         }
@@ -61,9 +61,9 @@ namespace Grumpy.MessageQueue.Msmq
         /// <summary>
         /// Get the existing MSMQ Queue
         /// </summary>
-        /// <param name="accessMode">Queue Access Mode</param>
+        /// <param name="queueMode">Queue Access Mode</param>
         /// <returns>The MSMQ Queue</returns>
-        protected abstract System.Messaging.MessageQueue GetQueue(AccessMode accessMode);
+        protected abstract System.Messaging.MessageQueue GetQueue(QueueMode queueMode);
 
         /// <inheritdoc />
         public string Name { get; }
@@ -86,7 +86,7 @@ namespace Grumpy.MessageQueue.Msmq
                 {
                     lock (_messageQueueLock)
                     {
-                        Connect(AccessMode.Receive);
+                        Connect(QueueMode.Receive);
 
                         if (_messageQueue != null)
                         {
@@ -118,42 +118,46 @@ namespace Grumpy.MessageQueue.Msmq
         /// <inheritdoc />
         public void Connect()
         {
-            Connect(_accessMode);
+            Connect(_queueMode);
         }
 
         /// <inheritdoc />
-        public virtual void Connect(AccessMode accessMode)
+        public virtual void Connect(QueueMode queueMode)
         {
+            Logger.Debug($"Input mode {queueMode} current mode {_queueMode}");
+
             lock (_messageQueueLock)
             {
-                if (_accessMode != accessMode && _messageQueue != null)
+                if (_queueMode != queueMode && _messageQueue != null)
                     Disconnect();
 
-                if (_accessMode != accessMode || _messageQueue == null)
+                if (_queueMode != queueMode || _messageQueue == null)
                 {
-                    _accessMode = accessMode;
+                    _queueMode = queueMode;
 
-                    _messageQueue = GetQueue(_accessMode);
+                    Logger.Debug($"Current mode {_queueMode}");
+
+                    _messageQueue = GetQueue(_queueMode);
 
                     if (_messageQueue != null)
                     {
-                        switch (_accessMode)
+                        switch (_queueMode)
                         {
-                            case AccessMode.Receive:
+                            case QueueMode.Receive:
                                 _messageQueue.MessageReadPropertyFilter = new MessagePropertyFilter { AppSpecific = true, Id = true, Body = true };
                                 _messageQueue.Formatter = new StringMessageFormatter();
                                 break;
-                            case AccessMode.Send:
+                            case QueueMode.Send:
                                 _messageQueue.DefaultPropertiesToSend = new DefaultPropertiesToSend { Recoverable = Durable };
                                 break;
-                            case AccessMode.None:
+                            case QueueMode.None:
                                 break;
                             default:
-                                throw new ArgumentOutOfRangeException(nameof(_accessMode), _accessMode, "Unknown Access Mode");
+                                throw new ArgumentOutOfRangeException(nameof(_queueMode), _queueMode, "Unknown Access Mode");
                         }
                     }
 
-                    Logger.Information("Connected to Message Queue {@Queue}", this);
+                    Logger.Information("Connected to Message Queue {@Queue} {@MessageQueue}", this, _messageQueue);
                 }
 
                 if (_messageQueue == null)
@@ -164,16 +168,16 @@ namespace Grumpy.MessageQueue.Msmq
         /// <inheritdoc />
         public void Reconnect()
         {
-            Reconnect(_accessMode);
+            Reconnect(_queueMode);
         }
 
         /// <inheritdoc />
-        public void Reconnect(AccessMode accessMode)
+        public void Reconnect(QueueMode queueMode)
         {
             if (_messageQueue != null)
                 Disconnect();
 
-            Connect(accessMode);
+            Connect(queueMode);
         }
 
         /// <inheritdoc />
@@ -185,7 +189,7 @@ namespace Grumpy.MessageQueue.Msmq
                 _messageQueue?.Dispose();
                 _messageQueue = null;
 
-                _accessMode = AccessMode.None;
+                _queueMode = QueueMode.None;
 
                 Logger.Information("Disconnect from Message Queue {@Queue}", this);
             }
@@ -210,7 +214,7 @@ namespace Grumpy.MessageQueue.Msmq
         {
             lock (_messageQueueLock)
             {
-                Connect(AccessMode.Send);
+                Connect(QueueMode.Send);
 
                 var messageQueueTransaction = CreateTransaction();
 
@@ -258,7 +262,7 @@ namespace Grumpy.MessageQueue.Msmq
 
             lock (_messageQueueLock)
             {
-                Connect(AccessMode.Receive);
+                Connect(QueueMode.Receive);
 
                 asyncResult = MessageQueueManager.BeginPeek(_messageQueue, timeout);
             }
@@ -267,7 +271,7 @@ namespace Grumpy.MessageQueue.Msmq
 
             lock (_messageQueueLock)
             {
-                Connect(AccessMode.Receive);
+                Connect(QueueMode.Receive);
 
                 return ReceiveMessage();
             }

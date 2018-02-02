@@ -3,7 +3,7 @@
     /// <summary>
     /// Queue Access Mode
     /// </summary>
-    public enum AccessMode
+    public enum QueueMode
     {
         /// <summary>
         /// Queue not connected
