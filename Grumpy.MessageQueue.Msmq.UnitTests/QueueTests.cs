@@ -51,6 +51,17 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         }
 
         [Fact]
+        public void SendLargeMessageToNonTransactionalQueueShouldThrow()
+        {
+            SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
+
+            using (var cut = CreateLocaleQueue("MyQueue", true, LocaleQueueMode.Durable, AccessMode.Send, false))
+            {
+                Assert.Throws<MessageSizeException>(() => cut.Send(new StringBuilder().Insert(0, "A", 5000000)));
+            }
+        }
+
+        [Fact]
         public void SendToNoneExistingQueueShouldCallCreate()
         {
             _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(e => true);
@@ -273,9 +284,9 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
             }
         }
 
-        private IQueue CreateLocaleQueue(string queue = "MyQueue", bool privateQueue = true, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster, AccessMode accessMode = AccessMode.SendAndReceive)
+        private IQueue CreateLocaleQueue(string queue = "MyQueue", bool privateQueue = true, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster, AccessMode accessMode = AccessMode.SendAndReceive, bool transactional = true)
         {
-            return new LocaleQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, queue, privateQueue, localeQueueMode, true, accessMode);
+            return new LocaleQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, queue, privateQueue, localeQueueMode, transactional, accessMode);
         }
 
         private void SetQueue(System.Messaging.MessageQueue queue, bool exists)

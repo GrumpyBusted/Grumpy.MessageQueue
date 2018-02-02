@@ -57,6 +57,19 @@ namespace Grumpy.MessageQueue.UnitTests
         }
 
         [Fact]
+        public void HandlerAndErrorHandlerThrowExceptionShouldNAckMessage()
+        {
+            var numberOfErrors = 0;
+            var message = CreateMessage("MyMessage");
+
+            _queue.Receive(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(e => message, e => null);
+
+            ExecuteHandler((m, c) => throw new Exception((string)m), (m, e) => throw new Exception());
+
+            message.Received(1).NAck();
+        }
+
+        [Fact]
         public void HeartbeatHandlerShouldBeCalled()
         {
             var numberOfHeartbeats = 0;

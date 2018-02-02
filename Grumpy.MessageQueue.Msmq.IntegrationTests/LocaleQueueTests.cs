@@ -146,7 +146,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
                     }
 
                     stopwatch.Stop();
-                    stopwatch.ElapsedMilliseconds.Should().BeInRange(400, 700);
+                    stopwatch.ElapsedMilliseconds.Should().BeInRange(400, 711);
                 }
             }
             finally
@@ -270,6 +270,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
                     queue.Count().Should().Be(2);
                     queue.Transactional.Should().BeTrue();
+                    queue.AccessMode.Should().Be(AccessMode.SendAndReceive);
                 }
 
                 using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.Durable))

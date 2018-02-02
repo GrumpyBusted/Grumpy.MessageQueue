@@ -16,7 +16,6 @@ using Grumpy.MessageQueue.Msmq.Extensions;
 using Grumpy.MessageQueue.Msmq.Interfaces;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using ObjectExtensions = Grumpy.Common.Extensions.ObjectExtensions;
 
 namespace Grumpy.MessageQueue.Msmq
 {
@@ -25,7 +24,6 @@ namespace Grumpy.MessageQueue.Msmq
     {
         private const int MaxMsmqMessageSize = 4096000;
         private System.Messaging.MessageQueue _messageQueue;
-        private readonly AccessMode _accessMode;
         private readonly object _messageQueueLock;
         private readonly Timer _disconnectTimer;
 
@@ -49,7 +47,7 @@ namespace Grumpy.MessageQueue.Msmq
             Durable = durable;
             _messageQueueLock = new object();
             _disconnectTimer = new Timer(Disconnect, null, 3600000, 3600000);
-            _accessMode = accessMode;
+            AccessMode = accessMode;
         }
 
         /// <summary>
@@ -81,10 +79,13 @@ namespace Grumpy.MessageQueue.Msmq
         public bool Transactional { get; }
 
         /// <inheritdoc />
+        public AccessMode AccessMode { get; }
+
+        /// <inheritdoc />
         public int Count()
         {
-            if (!_accessMode.In(AccessMode.Receive, AccessMode.SendAndReceive))
-                throw new AccessModeException(nameof(Count), _accessMode);
+            if (!AccessMode.In(AccessMode.Receive, AccessMode.SendAndReceive))
+                throw new AccessModeException(nameof(Count), AccessMode);
 
             try
             {
@@ -123,16 +124,13 @@ namespace Grumpy.MessageQueue.Msmq
         {
             lock (_messageQueueLock)
             {
-                if (_messageQueue != null)
-                    Disconnect();
-
                 if (_messageQueue == null)
                 {
-                    _messageQueue = GetQueue(_accessMode);
+                    _messageQueue = GetQueue(AccessMode);
 
                     if (_messageQueue != null)
                     {
-                        switch (_accessMode)
+                        switch (AccessMode)
                         {
                             case AccessMode.Receive:
                                 _messageQueue.MessageReadPropertyFilter = new MessagePropertyFilter { AppSpecific = true, Id = true, Body = true };
@@ -147,11 +145,11 @@ namespace Grumpy.MessageQueue.Msmq
                                 _messageQueue.DefaultPropertiesToSend = new DefaultPropertiesToSend { Recoverable = Durable };
                                 break;
                             default:
-                                throw new ArgumentOutOfRangeException(nameof(_accessMode), _accessMode, "Unknown Access Mode");
+                                throw new ArgumentOutOfRangeException(nameof(AccessMode), AccessMode, "Unknown Access Mode");
                         }
                     }
 
-                    Logger.Information("Connected to Message Queue {@Queue} {@MessageQueue}", this, _messageQueue);
+                    Logger.Information("Connected to Message Queue {@Queue}", this);
                 }
 
                 if (_messageQueue == null)
@@ -187,8 +185,8 @@ namespace Grumpy.MessageQueue.Msmq
         /// <inheritdoc />
         public void Send<T>(T message)
         {
-            if (!_accessMode.In(AccessMode.Send, AccessMode.SendAndReceive))
-                throw new AccessModeException(nameof(Send), _accessMode);
+            if (!AccessMode.In(AccessMode.Send, AccessMode.SendAndReceive))
+                throw new AccessModeException(nameof(Send), AccessMode);
 
             try
             {
@@ -248,8 +246,8 @@ namespace Grumpy.MessageQueue.Msmq
 
         private async Task<ITransactionalMessage> ReceiveAsyncInternal(int millisecondsTimeout, CancellationToken cancellationToken)
         {
-            if (!_accessMode.In(AccessMode.Receive, AccessMode.SendAndReceive))
-                throw new AccessModeException(nameof(Send), _accessMode);
+            if (!AccessMode.In(AccessMode.Receive, AccessMode.SendAndReceive))
+                throw new AccessModeException(nameof(Send), AccessMode);
 
             var timeout = TimeSpan.FromMilliseconds(millisecondsTimeout);
 

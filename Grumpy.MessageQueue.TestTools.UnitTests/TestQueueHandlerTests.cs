@@ -30,6 +30,18 @@ namespace Grumpy.MessageQueue.TestTools.UnitTests
             numberOfHeartbeats.Should().BeGreaterOrEqualTo(1);
         }
 
+        [Fact]
+        public void TestQueueHandlerShouldWorkWithCancelHandler()
+        {
+            var q = new TestQueueHandlerFactory();
+            using (var w = q.Create())
+            {
+                w.Start("MyQueue", true, LocaleQueueMode.DurableCreate, true, Handler, (o, e) => true, null, 1, true, true, new CancellationToken());
+                w.Stop();
+                w.Idle.Should().BeFalse();
+            }
+        }
+
         private void Handler(object message, CancellationToken cancellationToken)
         {
             if ((string)message == "Exception")

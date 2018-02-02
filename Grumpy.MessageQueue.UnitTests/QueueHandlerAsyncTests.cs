@@ -47,6 +47,25 @@ namespace Grumpy.MessageQueue.UnitTests
         }
 
         [Fact]
+        public void InvalidHeartbeatRateShouldThrow()
+        {
+            using (var cut = CreateQueueHandler())
+            {
+                Assert.Throws<ArgumentException>(() => cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, (m,c) => { }, null, () => { }, -1, false, false, _cancellationToken));
+            }
+        }
+
+        [Fact]
+        public void MultiStartShouldThrowException()
+        {
+            using (var cut = CreateQueueHandler())
+            {
+                cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, (m,c) => { }, null, null, 100, false, false, _cancellationToken);
+                Assert.Throws<ArgumentException>(() => cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, (m,c) => { }, null, null, 100, false, false, _cancellationToken));
+            }
+        }
+
+        [Fact]
         public void QueueBeforeShouldBeIdle()
         {
             using (var cut = CreateQueueHandler())
@@ -79,6 +98,18 @@ namespace Grumpy.MessageQueue.UnitTests
             message.Type.Returns(body.GetType());
 
             return message;
+        }
+
+        [Fact]
+        public void HeartbeatAreCalled()
+        {
+            using (var cut = CreateQueueHandler())
+            {
+                var i = 0;
+                cut.Start("MyQueue", true, LocaleQueueMode.TemporaryMaster, true, (m,c) => { }, null, () => { ++i; }, 1, false, false, _cancellationToken);
+                Thread.Sleep(1000);
+                i.Should().BeGreaterOrEqualTo(1);
+            }
         }
 
         public void Dispose()

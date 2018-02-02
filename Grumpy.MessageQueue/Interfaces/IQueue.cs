@@ -32,6 +32,11 @@ namespace Grumpy.MessageQueue.Interfaces
         bool Transactional { get; }
 
         /// <summary>
+        /// Queue Access Mode
+        /// </summary>
+        AccessMode AccessMode { get; }
+
+        /// <summary>
         /// Number of Messages in Queue
         /// </summary>
         int Count();
