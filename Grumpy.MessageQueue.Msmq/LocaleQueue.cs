@@ -51,7 +51,7 @@ namespace Grumpy.MessageQueue.Msmq
         {
             MessageQueueManager.Create(Name, Private, Transactional);
 
-            Logger.Debug($"Queue created {Name} {Private} {Transactional}");
+            Logger.Debug("Queue created {Name} {Private} {Transactional}", Name, Private, Transactional);
         }
 
         /// <inheritdoc />
@@ -59,7 +59,7 @@ namespace Grumpy.MessageQueue.Msmq
         {
             MessageQueueManager.Delete(Name, Private);
 
-            Logger.Debug($"Queue deleted {Name} {Private} {Transactional}");
+            Logger.Debug("Queue deleted {Name} {Private}", Name, Private);
         }
 
         /// <inheritdoc />
@@ -103,12 +103,15 @@ namespace Grumpy.MessageQueue.Msmq
                             mutex.WaitOne(10000);
 
                             if (!Exists())
+                            {
                                 Create();
+
+                                Logger.Information($"Durable queue created {Name} {Private}");
+                            }
 
                             mutex.ReleaseMutex();
                         }
                     }
-                    Logger.Information($"Durable queue created {Name} {Private}");
 
                     break;
                 case LocaleQueueMode.TemporaryMaster:

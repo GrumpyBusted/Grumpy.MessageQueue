@@ -97,7 +97,7 @@ namespace Grumpy.MessageQueue
                 _processTask.Start(Process, _cancellationTokenSource.Token);
             }
 
-            _logger.Information($"Queue Handler started {_queueName}");
+            _logger.Information("Queue Handler started {QueueName}", _queueName);
         }
 
         /// <inheritdoc />
@@ -120,7 +120,7 @@ namespace Grumpy.MessageQueue
             _cancellationTokenRegistration.Dispose();
             _queue?.Dispose();
 
-            _logger.Information($"Queue Handler stopped {_queueName}");
+            _logger.Information("Queue Handler stopped {QueueName}", _queueName);
         }
 
         /// <inheritdoc />
@@ -171,7 +171,7 @@ namespace Grumpy.MessageQueue
             }
             catch (Exception exception)
             {
-                _logger.Warning(exception, $"Error processing queue handler {_queueName}");
+                _logger.Warning(exception, "Error processing queue handler {QueueName}", _queueName);
 
                 if (_syncMode)
                     throw new QueueHandlerProcessException(exception);
@@ -194,7 +194,7 @@ namespace Grumpy.MessageQueue
             }
             catch (Exception exception)
             {
-                _logger.Information(exception, $"Exception receiving message, retry count {_numberOfException}");
+                _logger.Information(exception, "Exception receiving message {RetryCount}", _numberOfException);
 
                 _messageReceived = false;
 
@@ -271,7 +271,7 @@ namespace Grumpy.MessageQueue
             }
             catch(Exception exception)
             {
-                _logger.Warning(exception, $"Error in Heartbeat Handler {_queueName}");
+                _logger.Warning(exception, "Error in Heartbeat Handler {QueueName}", _queueName);
             }
 
             _heartRateMonitor?.Restart();
