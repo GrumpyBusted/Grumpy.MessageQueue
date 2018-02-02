@@ -15,15 +15,15 @@ namespace Grumpy.MessageQueue.Msmq
         public string ServerName { get; }
 
         /// <inheritdoc />
-        public RemoteQueue(ILogger logger, IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string serverName, string name, bool privateQueue, RemoteQueueMode remoteQueueMode, bool transactional) : base(logger, messageQueueManager, messageQueueTransactionFactory, name, privateQueue, remoteQueueMode == RemoteQueueMode.Durable, transactional)
+        public RemoteQueue(ILogger logger, IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string serverName, string name, bool privateQueue, RemoteQueueMode remoteQueueMode, bool transactional, AccessMode accessMode) : base(logger, messageQueueManager, messageQueueTransactionFactory, name, privateQueue, remoteQueueMode == RemoteQueueMode.Durable, transactional, accessMode)
         {
             ServerName = serverName;
         }
 
         /// <inheritdoc />
-        protected override System.Messaging.MessageQueue GetQueue(QueueMode queueMode)
+        protected override System.Messaging.MessageQueue GetQueue(AccessMode accessMode)
         {
-            return MessageQueueManager.Get(ServerName, Name, Private, queueMode == QueueMode.Receive ? QueueAccessMode.Receive : queueMode == QueueMode.Send ? QueueAccessMode.Send : QueueAccessMode.SendAndReceive);
+            return MessageQueueManager.Get(ServerName, Name, Private, accessMode == AccessMode.Receive ? QueueAccessMode.Receive : accessMode == AccessMode.Send ? QueueAccessMode.Send : QueueAccessMode.SendAndReceive);
         }
 
         /// <inheritdoc />

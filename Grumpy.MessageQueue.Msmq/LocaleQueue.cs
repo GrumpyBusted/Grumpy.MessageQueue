@@ -20,7 +20,7 @@ namespace Grumpy.MessageQueue.Msmq
         private bool _disposed;
 
         /// <inheritdoc />
-        public LocaleQueue(ILogger logger, IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string name, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional) : base(logger, messageQueueManager, messageQueueTransactionFactory, name, privateQueue, localeQueueMode.In(LocaleQueueMode.Durable, LocaleQueueMode.DurableCreate), transactional)
+        public LocaleQueue(ILogger logger, IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string name, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional, AccessMode accessMode) : base(logger, messageQueueManager, messageQueueTransactionFactory, name, privateQueue, localeQueueMode.In(LocaleQueueMode.Durable, LocaleQueueMode.DurableCreate), transactional, accessMode)
         {
             _localeQueueMode = localeQueueMode;
 
@@ -29,20 +29,20 @@ namespace Grumpy.MessageQueue.Msmq
         }
         
         /// <inheritdoc />
-        public override void Connect(QueueMode queueMode)
+        public override void Connect()
         {
             try
             {
                 if (!Exists())
                     CreateQueue();
 
-                base.Connect(queueMode);
+                base.Connect();
             }
             catch (QueueMissingException)
             {
                 CreateQueue();
 
-                base.Connect(queueMode);
+                base.Connect();
             }
         }
 
@@ -51,7 +51,7 @@ namespace Grumpy.MessageQueue.Msmq
         {
             MessageQueueManager.Create(Name, Private, Transactional);
 
-            Logger.Debug($"Queue Created {Name} {Private} {Transactional}");
+            Logger.Debug($"Queue created {Name} {Private} {Transactional}");
         }
 
         /// <inheritdoc />
@@ -69,9 +69,9 @@ namespace Grumpy.MessageQueue.Msmq
         }
 
         /// <inheritdoc />
-        protected override System.Messaging.MessageQueue GetQueue(QueueMode queueMode)
+        protected override System.Messaging.MessageQueue GetQueue(AccessMode accessMode)
         {
-            return MessageQueueManager.Get(".", Name, Private, queueMode == QueueMode.Receive ? QueueAccessMode.Receive : queueMode == QueueMode.Send ? QueueAccessMode.Send : QueueAccessMode.SendAndReceive);
+            return MessageQueueManager.Get(".", Name, Private, accessMode == AccessMode.Receive ? QueueAccessMode.Receive : accessMode == AccessMode.Send ? QueueAccessMode.Send : QueueAccessMode.SendAndReceive);
         }
 
         /// <inheritdoc />

@@ -13,7 +13,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
         {
             var name = $"IntegrationTest_{UniqueKeyUtility.Generate()}";
 
-            using (var queue = new QueueFactory(NullLogger.Instance).CreateLocale(name, true, LocaleQueueMode.TemporaryMaster, true))
+            using (var queue = new QueueFactory(NullLogger.Instance).CreateLocale(name, true, LocaleQueueMode.TemporaryMaster, true, AccessMode.Receive))
             {
                 queue.Should().NotBeNull();
                 queue.GetType().Should().Be(typeof(LocaleQueue));

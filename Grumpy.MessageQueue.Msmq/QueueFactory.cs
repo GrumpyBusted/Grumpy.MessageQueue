@@ -21,15 +21,15 @@ namespace Grumpy.MessageQueue.Msmq
         }
 
         /// <inheritdoc />
-        public ILocaleQueue CreateLocale(string name, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional)
+        public ILocaleQueue CreateLocale(string name, bool privateQueue, LocaleQueueMode localeQueueMode, bool transactional, AccessMode accessMode)
         {
-            return new LocaleQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, name, privateQueue, localeQueueMode, transactional);
+            return new LocaleQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, name, privateQueue, localeQueueMode, transactional, accessMode);
         }
 
         /// <inheritdoc />
-        public IRemoteQueue CreateRemote(string serverName, string name, bool privateQueue, RemoteQueueMode remoteQueueMode, bool transactional)
+        public IRemoteQueue CreateRemote(string serverName, string name, bool privateQueue, RemoteQueueMode remoteQueueMode, bool transactional, AccessMode accessMode)
         {
-            return new RemoteQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, serverName, name, privateQueue, remoteQueueMode, transactional);
+            return new RemoteQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, serverName, name, privateQueue, remoteQueueMode, transactional, accessMode);
         }
     }
 }

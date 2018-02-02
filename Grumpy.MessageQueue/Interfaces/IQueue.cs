@@ -34,7 +34,7 @@ namespace Grumpy.MessageQueue.Interfaces
         /// <summary>
         /// Number of Messages in Queue
         /// </summary>
-        int Count { get; }
+        int Count();
 
         /// <summary>
         /// Connect to Message Queue
@@ -42,22 +42,10 @@ namespace Grumpy.MessageQueue.Interfaces
         void Connect();
 
         /// <summary>
-        /// Connect to Message Queue
-        /// </summary>
-        /// <param name="queueMode">Queue Access Mode</param>
-        void Connect(QueueMode queueMode);
-
-        /// <summary>
         /// Reconnect to Message Queue
         /// </summary>
         void Reconnect();
 
-        /// <summary>
-        /// Reconnect to Message Queue
-        /// </summary>
-        /// <param name="queueMode">Queue Access Mode</param>
-        void Reconnect(QueueMode queueMode);
-        
         /// <summary>
         /// Disconnect from Message Queue
         /// </summary>

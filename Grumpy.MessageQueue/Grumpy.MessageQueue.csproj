@@ -36,7 +36,8 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Enum\QueueMode.cs" />
+    <Compile Include="Enum\AccessMode.cs" />
+    <Compile Include="Exceptions\AccessModeException.cs" />
     <Compile Include="Interfaces\ILocaleQueue.cs" />
     <Compile Include="Interfaces\IQueue.cs" />
     <Compile Include="Interfaces\IQueueFactory.cs" />

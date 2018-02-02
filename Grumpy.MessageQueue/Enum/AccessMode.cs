@@ -3,13 +3,8 @@
     /// <summary>
     /// Queue Access Mode
     /// </summary>
-    public enum QueueMode
+    public enum AccessMode
     {
-        /// <summary>
-        /// Queue not connected
-        /// </summary>
-        None,
-        
         /// <summary>
         /// Queue used for sending messages
         /// </summary>
@@ -18,6 +13,11 @@
         /// <summary>
         /// Queue used for receiving messages
         /// </summary>
-        Receive
+        Receive,
+        
+        /// <summary>
+        /// Queue used for both receiving and sending messages
+        /// </summary>
+        SendAndReceive
     }
 }

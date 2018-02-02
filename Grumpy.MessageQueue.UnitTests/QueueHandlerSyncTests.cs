@@ -26,7 +26,7 @@ namespace Grumpy.MessageQueue.UnitTests
             _queue = Substitute.For<ILocaleQueue>();
 
             _queueFactory = Substitute.For<IQueueFactory>();
-            _queueFactory.CreateLocale(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<LocaleQueueMode>(), Arg.Any<bool>()).Returns(_queue);
+            _queueFactory.CreateLocale(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<LocaleQueueMode>(), Arg.Any<bool>(), Arg.Any<AccessMode>()).Returns(_queue);
             _taskFactory = Substitute.For<ITaskFactory>();
             _taskFactory.Create().Returns(new SyncTestTask());
             _cancellationToken = new CancellationToken();

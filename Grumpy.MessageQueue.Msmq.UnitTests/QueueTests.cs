@@ -6,6 +6,7 @@ using System.Threading;
 using FluentAssertions;
 using Grumpy.Json;
 using Grumpy.MessageQueue.Enum;
+using Grumpy.MessageQueue.Exceptions;
 using Grumpy.MessageQueue.Interfaces;
 using Grumpy.MessageQueue.Msmq.Dto;
 using Grumpy.MessageQueue.Msmq.Exceptions;
@@ -52,7 +53,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         [Fact]
         public void SendToNoneExistingQueueShouldCallCreate()
         {
-            _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(e => false, e => true);
+            _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(e => true);
             _messageQueueManager.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(new System.Messaging.MessageQueue());
 
             using (var cut = CreateLocaleQueue())
@@ -245,9 +246,36 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
             }
         }
 
-        private IQueue CreateLocaleQueue(string queue = "MyQueue", bool privateQueue = true, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster)
+        [Fact]
+        public void SendOnReceiveQueueShouldThrowException()
         {
-            return new LocaleQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, queue, privateQueue, localeQueueMode, true);
+            using (var cut = CreateLocaleQueue("MyQueue", true, LocaleQueueMode.TemporaryMaster, AccessMode.Receive))
+            {
+                Assert.Throws<AccessModeException>(() => cut.Send("Message"));
+            }
+        }
+
+        [Fact]
+        public void CountOnSendQueueShouldThrowException()
+        {
+            using (var cut = CreateLocaleQueue("MyQueue", true, LocaleQueueMode.TemporaryMaster, AccessMode.Send))
+            {
+                Assert.Throws<AccessModeException>(() => cut.Count());
+            }
+        }
+
+        [Fact]
+        public void ReceiveOnSendQueueShouldThrowException()
+        {
+            using (var cut = CreateLocaleQueue("MyQueue", true, LocaleQueueMode.TemporaryMaster, AccessMode.Send))
+            {
+                Assert.Throws<AccessModeException>(() => cut.Receive(1000, _cancellationToken));
+            }
+        }
+
+        private IQueue CreateLocaleQueue(string queue = "MyQueue", bool privateQueue = true, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster, AccessMode accessMode = AccessMode.SendAndReceive)
+        {
+            return new LocaleQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, queue, privateQueue, localeQueueMode, true, accessMode);
         }
 
         private void SetQueue(System.Messaging.MessageQueue queue, bool exists)

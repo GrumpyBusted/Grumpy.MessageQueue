@@ -31,7 +31,7 @@ namespace Grumpy.MessageQueue.IntegrationTests
             _queue.Receive(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(e => CreateMessage("Message1"), e => CreateMessage("Message2"), e => CreateMessage("Message3"), e => null);
 
             _queueFactory = Substitute.For<IQueueFactory>();
-            _queueFactory.CreateLocale(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<LocaleQueueMode>(), Arg.Any<bool>()).Returns(_queue);
+            _queueFactory.CreateLocale(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<LocaleQueueMode>(), Arg.Any<bool>(), Arg.Any<AccessMode>()).Returns(_queue);
             _taskFactory = new TaskFactory();
             
             _cancellationTokenSource = new CancellationTokenSource();

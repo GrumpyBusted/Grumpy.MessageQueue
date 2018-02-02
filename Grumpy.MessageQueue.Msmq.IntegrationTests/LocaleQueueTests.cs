@@ -19,9 +19,9 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
         private readonly CancellationToken _cancellationToken = new CancellationToken();
         private readonly IMessageQueueTransactionFactory _messageQueueTransactionFactory = new MessageQueueTransactionFactory();
 
-        private ILocaleQueue CreateLocalQueue(string name, bool privateQueue, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster, bool transactional = true)
+        private ILocaleQueue CreateLocalQueue(string name, bool privateQueue, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster, AccessMode accessMode = AccessMode.Receive, bool transactional = true)
         {
-            return new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, privateQueue, localeQueueMode, transactional);
+            return new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, privateQueue, localeQueueMode, transactional, accessMode);
         }
 
         [Fact]
@@ -33,11 +33,11 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
             {
                 _messageQueueManager.Exists(name, true).Should().BeFalse();
 
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, AccessMode.Send))
                 {
                     queue.Disconnect();
-                    queue.Connect(QueueMode.Send);
-                    queue.Reconnect(QueueMode.Send);
+                    queue.Connect();
+                    queue.Reconnect();
                     queue.Disconnect();
                     queue.Connect();
                     queue.Reconnect();
@@ -57,12 +57,12 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, AccessMode.Send))
                 {
                     queue.Send("Hallo");
                 }
 
-                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true, AccessMode.Receive))
                 {
                     var message = (string)queue.Receive(100, _cancellationToken).Message;
 
@@ -82,7 +82,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true, AccessMode.Receive))
                 {
                     var stopwatch = new Stopwatch();
                     stopwatch.Start();
@@ -105,7 +105,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true, AccessMode.SendAndReceive))
                 {
                     queue.Send("Hallo");
                     var stopwatch = new Stopwatch();
@@ -128,7 +128,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true, AccessMode.Receive))
                 {
                     var cancellationTokenSource = new CancellationTokenSource();
                     var stopwatch = new Stopwatch();
@@ -162,7 +162,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true))
+                using (var queue = new LocaleQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, name, true, LocaleQueueMode.DurableCreate, true, AccessMode.Receive))
                 {
                     var cancellationTokenSource = new CancellationTokenSource();
                     var stopwatch = new Stopwatch();
@@ -228,7 +228,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.Durable))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.Durable, AccessMode.Send))
                 {
                     Assert.Throws<QueueMissingException>(() => queue.Send("Message"));
                 }
@@ -264,11 +264,11 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, AccessMode.SendAndReceive))
                 {
                     queue.Send(new string('A', 5000000));
 
-                    queue.Count.Should().Be(2);
+                    queue.Count().Should().Be(2);
                     queue.Transactional.Should().BeTrue();
                 }
 
@@ -293,7 +293,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, AccessMode.Send))
                 {
                     queue.Send("ABC");
                 }
@@ -318,7 +318,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
             {
                 _messageQueueManager.Exists(name, true).Should().BeFalse();
 
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, AccessMode.SendAndReceive))
                 {
                     queue.Send("ABC");
                     _messageQueueManager.Exists(name, true).Should().BeTrue();
@@ -330,7 +330,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
                     queue.Reconnect();
                     _messageQueueManager.Exists(name, true).Should().BeTrue();
                     queue.Disconnect();
-                    queue.Connect(QueueMode.Receive);
+                    queue.Connect();
                     _messageQueueManager.Exists(name, true).Should().BeTrue();
                 }
             }
@@ -347,7 +347,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, AccessMode.Send))
                 {
                     queue.Send(new MyDto { S = "ABC", I = 2 });
                 }
@@ -374,7 +374,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, AccessMode.Send))
                 {
                     queue.Send(new MyDto { S = "ABC", I = 2 });
                 }
@@ -399,7 +399,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, AccessMode.Send))
                 {
                     queue.Send("Message");
                 }
@@ -485,16 +485,16 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, AccessMode.SendAndReceive))
                 {
                     queue.Send("Message");
 
-                    queue.Count.Should().Be(1);
+                    queue.Count().Should().Be(1);
 
                     var message = queue.Receive(1000, new CancellationToken());
                     message.Ack();
 
-                    queue.Count.Should().Be(0);
+                    queue.Count().Should().Be(0);
                 }
             }
             finally
@@ -510,16 +510,16 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, AccessMode.SendAndReceive))
                 {
                     queue.Send("Message");
 
-                    queue.Count.Should().Be(1);
+                    queue.Count().Should().Be(1);
 
                     var message = queue.Receive(1000, new CancellationToken());
                     message.NAck();
 
-                    queue.Count.Should().Be(1);
+                    queue.Count().Should().Be(1);
                 }
             }
             finally
@@ -537,7 +537,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
             {
                 var stopwatch = new Stopwatch();
 
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, AccessMode.SendAndReceive))
                 {
                     stopwatch.Start();
                     
@@ -564,7 +564,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
             {
                 var stopwatch = new Stopwatch();
 
-                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, false))
+                using (var queue = CreateLocalQueue(name, true, LocaleQueueMode.DurableCreate, AccessMode.SendAndReceive, false))
                 {
                     stopwatch.Start();
 

@@ -4,9 +4,11 @@ using System.Messaging;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Grumpy.Common.Extensions;
 using Grumpy.Json;
 using Grumpy.Logging;
 using Grumpy.MessageQueue.Enum;
+using Grumpy.MessageQueue.Exceptions;
 using Grumpy.MessageQueue.Interfaces;
 using Grumpy.MessageQueue.Msmq.Dto;
 using Grumpy.MessageQueue.Msmq.Exceptions;
@@ -14,6 +16,7 @@ using Grumpy.MessageQueue.Msmq.Extensions;
 using Grumpy.MessageQueue.Msmq.Interfaces;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using ObjectExtensions = Grumpy.Common.Extensions.ObjectExtensions;
 
 namespace Grumpy.MessageQueue.Msmq
 {
@@ -22,7 +25,7 @@ namespace Grumpy.MessageQueue.Msmq
     {
         private const int MaxMsmqMessageSize = 4096000;
         private System.Messaging.MessageQueue _messageQueue;
-        private QueueMode _queueMode;
+        private readonly AccessMode _accessMode;
         private readonly object _messageQueueLock;
         private readonly Timer _disconnectTimer;
 
@@ -32,9 +35,9 @@ namespace Grumpy.MessageQueue.Msmq
         protected readonly ILogger Logger;
 
         /// <inheritdoc />
-        protected Queue(ILogger logger, IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string name, bool privateQueue, bool durable, bool transactional)
+        protected Queue(ILogger logger, IMessageQueueManager messageQueueManager, IMessageQueueTransactionFactory messageQueueTransactionFactory, string name, bool privateQueue, bool durable, bool transactional, AccessMode accessMode)
         {
-            if (name.Length > 124) 
+            if (name.Length > 124)
                 throw new ArgumentException("Queue name too long", nameof(name));
 
             Logger = logger;
@@ -44,9 +47,9 @@ namespace Grumpy.MessageQueue.Msmq
             Private = privateQueue;
             Transactional = transactional;
             Durable = durable;
-            _queueMode = QueueMode.None;
             _messageQueueLock = new object();
             _disconnectTimer = new Timer(Disconnect, null, 3600000, 3600000);
+            _accessMode = accessMode;
         }
 
         /// <summary>
@@ -61,9 +64,9 @@ namespace Grumpy.MessageQueue.Msmq
         /// <summary>
         /// Get the existing MSMQ Queue
         /// </summary>
-        /// <param name="queueMode">Queue Access Mode</param>
+        /// <param name="accessMode">Queue Access Mode</param>
         /// <returns>The MSMQ Queue</returns>
-        protected abstract System.Messaging.MessageQueue GetQueue(QueueMode queueMode);
+        protected abstract System.Messaging.MessageQueue GetQueue(AccessMode accessMode);
 
         /// <inheritdoc />
         public string Name { get; }
@@ -78,82 +81,73 @@ namespace Grumpy.MessageQueue.Msmq
         public bool Transactional { get; }
 
         /// <inheritdoc />
-        public int Count
+        public int Count()
         {
-            get
+            if (!_accessMode.In(AccessMode.Receive, AccessMode.SendAndReceive))
+                throw new AccessModeException(nameof(Count), _accessMode);
+
+            try
             {
-                try
+                lock (_messageQueueLock)
                 {
-                    lock (_messageQueueLock)
+                    Connect();
+
+                    if (_messageQueue != null)
                     {
-                        Connect(QueueMode.Receive);
+                        var count = 0;
 
-                        if (_messageQueue != null)
+                        using (var messageEnumerator = _messageQueue.GetMessageEnumerator2())
                         {
-                            var count = 0;
-
-                            using (var messageEnumerator = _messageQueue.GetMessageEnumerator2())
-                            {
-                                while (messageEnumerator.MoveNext())
-                                    ++count;
-                            }
-
-                            return count;
+                            while (messageEnumerator.MoveNext())
+                                ++count;
                         }
+
+                        return count;
                     }
-
-                    Logger.Warning("Unable to count messages {@Queue}", this);
-
-                    return -1;
                 }
-                catch (Exception exception)
-                {
-                    Logger.Warning(exception, "Unable to count messages {@Queue}", this);
 
-                    return -1;
-                }
+                Logger.Warning("Unable to count messages {@Queue}", this);
+
+                return -1;
+            }
+            catch (Exception exception)
+            {
+                Logger.Warning(exception, "Unable to count messages {@Queue}", this);
+
+                return -1;
             }
         }
 
         /// <inheritdoc />
-        public void Connect()
+        public virtual void Connect()
         {
-            Connect(_queueMode);
-        }
-
-        /// <inheritdoc />
-        public virtual void Connect(QueueMode queueMode)
-        {
-            Logger.Debug($"Input mode {queueMode} current mode {_queueMode}");
-
             lock (_messageQueueLock)
             {
-                if (_queueMode != queueMode && _messageQueue != null)
+                if (_messageQueue != null)
                     Disconnect();
 
-                if (_queueMode != queueMode || _messageQueue == null)
+                if (_messageQueue == null)
                 {
-                    _queueMode = queueMode;
-
-                    Logger.Debug($"Current mode {_queueMode}");
-
-                    _messageQueue = GetQueue(_queueMode);
+                    _messageQueue = GetQueue(_accessMode);
 
                     if (_messageQueue != null)
                     {
-                        switch (_queueMode)
+                        switch (_accessMode)
                         {
-                            case QueueMode.Receive:
+                            case AccessMode.Receive:
                                 _messageQueue.MessageReadPropertyFilter = new MessagePropertyFilter { AppSpecific = true, Id = true, Body = true };
                                 _messageQueue.Formatter = new StringMessageFormatter();
                                 break;
-                            case QueueMode.Send:
+                            case AccessMode.Send:
                                 _messageQueue.DefaultPropertiesToSend = new DefaultPropertiesToSend { Recoverable = Durable };
                                 break;
-                            case QueueMode.None:
+                            case AccessMode.SendAndReceive:
+                                _messageQueue.MessageReadPropertyFilter = new MessagePropertyFilter { AppSpecific = true, Id = true, Body = true };
+                                _messageQueue.Formatter = new StringMessageFormatter();
+                                _messageQueue.DefaultPropertiesToSend = new DefaultPropertiesToSend { Recoverable = Durable };
                                 break;
                             default:
-                                throw new ArgumentOutOfRangeException(nameof(_queueMode), _queueMode, "Unknown Access Mode");
+                                throw new ArgumentOutOfRangeException(nameof(_accessMode), _accessMode, "Unknown Access Mode");
                         }
                     }
 
@@ -168,16 +162,13 @@ namespace Grumpy.MessageQueue.Msmq
         /// <inheritdoc />
         public void Reconnect()
         {
-            Reconnect(_queueMode);
-        }
+            lock (_messageQueueLock)
+            {
+                if (_messageQueue != null)
+                    Disconnect();
 
-        /// <inheritdoc />
-        public void Reconnect(QueueMode queueMode)
-        {
-            if (_messageQueue != null)
-                Disconnect();
-
-            Connect(queueMode);
+                Connect();
+            }
         }
 
         /// <inheritdoc />
@@ -189,8 +180,6 @@ namespace Grumpy.MessageQueue.Msmq
                 _messageQueue?.Dispose();
                 _messageQueue = null;
 
-                _queueMode = QueueMode.None;
-
                 Logger.Information("Disconnect from Message Queue {@Queue}", this);
             }
         }
@@ -198,6 +187,9 @@ namespace Grumpy.MessageQueue.Msmq
         /// <inheritdoc />
         public void Send<T>(T message)
         {
+            if (!_accessMode.In(AccessMode.Send, AccessMode.SendAndReceive))
+                throw new AccessModeException(nameof(Send), _accessMode);
+
             try
             {
                 SendInternal(message);
@@ -214,7 +206,7 @@ namespace Grumpy.MessageQueue.Msmq
         {
             lock (_messageQueueLock)
             {
-                Connect(QueueMode.Send);
+                Connect();
 
                 var messageQueueTransaction = CreateTransaction();
 
@@ -256,25 +248,25 @@ namespace Grumpy.MessageQueue.Msmq
 
         private async Task<ITransactionalMessage> ReceiveAsyncInternal(int millisecondsTimeout, CancellationToken cancellationToken)
         {
+            if (!_accessMode.In(AccessMode.Receive, AccessMode.SendAndReceive))
+                throw new AccessModeException(nameof(Send), _accessMode);
+
             var timeout = TimeSpan.FromMilliseconds(millisecondsTimeout);
 
             IAsyncResult asyncResult;
+            
+            Connect();
 
             lock (_messageQueueLock)
             {
-                Connect(QueueMode.Receive);
-
                 asyncResult = MessageQueueManager.BeginPeek(_messageQueue, timeout);
             }
 
             await WaitForMessageAsync(cancellationToken, asyncResult);
 
-            lock (_messageQueueLock)
-            {
-                Connect(QueueMode.Receive);
+            Connect();
 
-                return ReceiveMessage();
-            }
+            return ReceiveMessage();
         }
 
         /// <inheritdoc />
@@ -331,7 +323,7 @@ namespace Grumpy.MessageQueue.Msmq
         {
             Dispose(false);
         }
-        
+
         /// <summary>
         /// Dispose locale objects
         /// </summary>
@@ -402,21 +394,24 @@ namespace Grumpy.MessageQueue.Msmq
             {
                 using (var memoryStream = new MemoryStream())
                 {
-                    var message = MessageQueueManager.Receive(_messageQueue, TimeSpan.Zero, messageQueueTransaction?.Transaction);
-
-                    Logger.Debug("Received message chunk ({Chunk}/{NumberOfChunks}) from {QueueName} {@Message}", 1, message?.AppSpecific ?? 0, Name, message);
-
-                    var messageNumber = 0;
-
-                    while (message != null && ++messageNumber <= message.AppSpecific)
+                    lock (_messageQueue)
                     {
-                        message.BodyStream.CopyTo(memoryStream);
+                        var message = MessageQueueManager.Receive(_messageQueue, TimeSpan.Zero, messageQueueTransaction?.Transaction);
 
-                        if (messageNumber < message.AppSpecific)
+                        Logger.Debug("Received message chunk ({Chunk}/{NumberOfChunks}) from {QueueName} {@Message}", 1, message?.AppSpecific ?? 0, Name, message);
+
+                        var messageNumber = 0;
+
+                        while (message != null && ++messageNumber <= message.AppSpecific)
                         {
-                            message = MessageQueueManager.ReceiveByCorrelationId(_messageQueue, message.Id, TimeSpan.Zero, messageQueueTransaction?.Transaction);
+                            message.BodyStream.CopyTo(memoryStream);
 
-                            Logger.Debug("Received message chunk ({Chunk}/{NumberOfChunks}) from {QueueName} {@Message}", messageNumber + 1, message?.AppSpecific ?? 0, Name, message);
+                            if (messageNumber < message.AppSpecific)
+                            {
+                                message = MessageQueueManager.ReceiveByCorrelationId(_messageQueue, message.Id, TimeSpan.Zero, messageQueueTransaction?.Transaction);
+
+                                Logger.Debug("Received message chunk ({Chunk}/{NumberOfChunks}) from {QueueName} {@Message}", messageNumber + 1, message?.AppSpecific ?? 0, Name, message);
+                            }
                         }
                     }
 

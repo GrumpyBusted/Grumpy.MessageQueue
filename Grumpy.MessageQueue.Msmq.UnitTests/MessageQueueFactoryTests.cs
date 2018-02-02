@@ -14,7 +14,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         [Fact]
         public void MessageQueueFactoryCanCreateLocaleInstance()
         {
-            using (var queue = CreateQueueFactory().CreateLocale("MyQueue", false, LocaleQueueMode.DurableCreate, true))
+            using (var queue = CreateQueueFactory().CreateLocale("MyQueue", false, LocaleQueueMode.DurableCreate, true, AccessMode.Receive))
             {
                 queue.Should().NotBeNull();
                 queue.GetType().Should().Be(typeof(LocaleQueue));
@@ -24,7 +24,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         [Fact]
         public void MessageQueueFactoryCanCreateRemoteInstance()
         {
-            var queue = CreateQueueFactory().CreateRemote("MyServer", "MyQueue", false, RemoteQueueMode.Durable, true);
+            var queue = CreateQueueFactory().CreateRemote("MyServer", "MyQueue", false, RemoteQueueMode.Durable, true, AccessMode.Receive);
 
             queue.Should().NotBeNull();
             queue.GetType().Should().Be(typeof(RemoteQueue));

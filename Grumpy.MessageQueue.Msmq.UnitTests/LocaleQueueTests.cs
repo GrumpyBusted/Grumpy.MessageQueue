@@ -28,12 +28,12 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         [Fact]
         public void GetLocaleQueueWithCreateModeAutoShouldCreateQueue()
         {
-            _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(e => false, e => true);
+            _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(e => true);
             _messageQueueManager.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(new System.Messaging.MessageQueue());
 
             using (var cut = CreateLocalQueue("MyQueue"))
             {
-                cut.Connect(QueueMode.Receive);
+                cut.Connect();
             }
 
             _messageQueueManager.Received(1).Create(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<bool>());
@@ -47,7 +47,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
             using (var cut = CreateLocalQueue("MyQueue", true, LocaleQueueMode.DurableCreate))
             {
-                cut.Connect(QueueMode.Receive);
+                cut.Connect();
             }
 
             _messageQueueManager.Received(1).Create(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<bool>());
@@ -83,7 +83,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         [Fact]
         public void SendToNoneExistingQueueShouldNotCallCreate()
         {
-            _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(e => false, e => true);
+            _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(e => true);
             _messageQueueManager.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(new System.Messaging.MessageQueue());
 
             using (var cut = CreateLocalQueue("MyQueue"))
@@ -230,7 +230,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
         private ILocaleQueue CreateLocalQueue(string queue, bool privateQueue = true, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster)
         {
-            return new LocaleQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, queue, privateQueue, localeQueueMode, true);
+            return new LocaleQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, queue, privateQueue, localeQueueMode, true, AccessMode.SendAndReceive);
         }
 
         private void SetQueue(System.Messaging.MessageQueue queue, bool exists)

@@ -82,7 +82,7 @@ namespace Grumpy.MessageQueue
             _queueName = queueName;
             _cancellationTokenSource = new CancellationTokenSource();
             _syncMode = syncMode;
-            _queue = _queueFactory.CreateLocale(_queueName, privateQueue, localeQueueMode, transactional);
+            _queue = _queueFactory.CreateLocale(_queueName, privateQueue, localeQueueMode, transactional, AccessMode.Receive);
             _messageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
             _heartbeatHandler = heartbeatHandler;
             _heartRateMilliseconds = heartRateMilliseconds;

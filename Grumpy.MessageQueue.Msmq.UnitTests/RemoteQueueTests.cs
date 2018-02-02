@@ -22,7 +22,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
             _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(true);
             _messageQueueManager.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(Substitute.For<System.Messaging.MessageQueue>());
 
-            var cut = CreateRemoteQueue(RemoteQueueMode.Durable);
+            var cut = CreateRemoteQueue(RemoteQueueMode.Durable, AccessMode.Send);
             cut.Send("Message");
 
             cut.ServerName.Should().Be("MyServerName");
@@ -36,7 +36,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
             _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(true);
             _messageQueueManager.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(Substitute.For<System.Messaging.MessageQueue>());
 
-            var cut = CreateRemoteQueue(RemoteQueueMode.Temporary);
+            var cut = CreateRemoteQueue(RemoteQueueMode.Temporary, AccessMode.Send);
             cut.Send("Message");
 
             cut.ServerName.Should().Be("MyServerName");
@@ -44,9 +44,9 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
             _messageQueueManager.Received(1).Get("MyServerName", Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>());
         }
 
-        private IRemoteQueue CreateRemoteQueue(RemoteQueueMode remoteQueueMode)
+        private IRemoteQueue CreateRemoteQueue(RemoteQueueMode remoteQueueMode, AccessMode accessMode)
         {
-            return new RemoteQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, "MyServerName", "MyQueue", false, remoteQueueMode, true);
+            return new RemoteQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, "MyServerName", "MyQueue", false, remoteQueueMode, true, accessMode);
         }
     }
 }

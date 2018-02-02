@@ -15,7 +15,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
         [Fact]
         public void SendToNoneExistingRemoteQueueShouldThrowException()
         {
-            using (var queue = new RemoteQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, "Test", $"IntegrationTest_{UniqueKeyUtility.Generate()}", false, RemoteQueueMode.Durable, true))
+            using (var queue = new RemoteQueue(NullLogger.Instance, _messageQueueManager, _messageQueueTransactionFactory, "Test", $"IntegrationTest_{UniqueKeyUtility.Generate()}", false, RemoteQueueMode.Durable, true, AccessMode.Send))
             {
                 Assert.Throws<QueueMissingException>(() => queue.Send("Hallo"));
             }

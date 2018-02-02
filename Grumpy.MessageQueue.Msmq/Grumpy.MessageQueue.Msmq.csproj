@@ -47,7 +47,6 @@
     <Compile Include="Exceptions\QueueMissingException.cs" />
     <Compile Include="Extensions\MessageQueueListExtensions.cs" />
     <Compile Include="Extensions\StringMessageFormatter.cs" />
-    <Compile Include="Extensions\WaitHandleExtensions.cs" />
     <Compile Include="Interfaces\IMessageQueueTransaction.cs" />
     <Compile Include="Interfaces\IMessageQueueTransactionFactory.cs" />
     <Compile Include="Interfaces\IMessageQueueManager.cs" />
