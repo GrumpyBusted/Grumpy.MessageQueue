@@ -358,7 +358,8 @@ namespace Grumpy.MessageQueue.Msmq
                 int bytes;
                 var chunk = 0;
 
-                Logger.Debug("Sending message in {Chunks} on {QueueName} ({Transactional}) {@MessageBody}", numberOfChunks, Name, Transactional ? "Transactional" : "Non-Transactional", body);
+                Logger.Debug("Sending message in {Chunks} Chucks on {QueueName} ({Transactional})", numberOfChunks, Name, Transactional ? "Transactional" : "Non-Transactional");
+                Logger.Debug($"Message: {body}");
 
                 if (!Transactional && numberOfChunks > 1)
                     throw new MessageSizeException(memoryStream.Length, buffer.Length, Transactional);
@@ -373,7 +374,7 @@ namespace Grumpy.MessageQueue.Msmq
 
                     queueMessage.BodyStream.Write(buffer, 0, bytes);
 
-                    Logger.Debug("Sending message chunk ({Chunk}/{NumberOfChunks)} on {QueueName} {@Message}", ++chunk, numberOfChunks, Name, queueMessage);
+                    Logger.Debug("Sending message chunk ({Chunk}/{NumberOfChunks}) on {QueueName} {CorrelationId}", ++chunk, numberOfChunks, Name, correlationId);
 
                     MessageQueueManager.Send(_messageQueue, queueMessage, messageQueueTransaction?.Transaction);
 
