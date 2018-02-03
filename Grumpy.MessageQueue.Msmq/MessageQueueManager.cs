@@ -4,20 +4,24 @@ using System.Linq;
 using System.Messaging;
 using Grumpy.Common.Extensions;
 using Grumpy.Common.Threading;
+using Grumpy.Logging;
 using Grumpy.MessageQueue.Msmq.Exceptions;
 using Grumpy.MessageQueue.Msmq.Extensions;
 using Grumpy.MessageQueue.Msmq.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Grumpy.MessageQueue.Msmq
 {
     /// <inheritdoc />
     public class MessageQueueManager : IMessageQueueManager
     {
+        private readonly ILogger _logger;
         private readonly object _lock;
 
         /// <inheritdoc />
-        public MessageQueueManager()
+        public MessageQueueManager(ILogger logger)
         {
+            _logger = logger;
             _lock = new object();
         }
 
@@ -38,6 +42,8 @@ namespace Grumpy.MessageQueue.Msmq
             }
             catch (Exception exception)
             {
+                _logger.Information(exception, "Error Creating Message Queue {}");
+
                 throw new QueueCreateException(name, privateQueue, exception);
             }
         }
@@ -49,9 +55,9 @@ namespace Grumpy.MessageQueue.Msmq
             {
                 System.Messaging.MessageQueue.Delete(Path(".", name, privateQueue));
             }
-            catch (MessageQueueException)
+            catch (MessageQueueException exception)
             {
-                // Ignore
+                _logger.Information(exception, "Error Deleting Message Queue");
             }
         }
 
@@ -69,11 +75,14 @@ namespace Grumpy.MessageQueue.Msmq
                 lock (_lock)
                 {
                     System.Messaging.MessageQueue.ClearConnectionCache();
+
                     return Exists(serverName, name, privateQueue) ? new System.Messaging.MessageQueue(Path(serverName, name, privateQueue), mode) : null;
                 }
             }
-            catch (MessageQueueException)
+            catch (MessageQueueException exception)
             {
+                _logger.Warning(exception, "Error Getting Message Queue");
+
                 return null;
             }
         }
@@ -86,11 +95,14 @@ namespace Grumpy.MessageQueue.Msmq
                 lock (_lock)
                 {
                     System.Messaging.MessageQueue.ClearConnectionCache();
+                    
                     return privateQueue ? System.Messaging.MessageQueue.GetPrivateQueuesByMachine(serverName).SelectNames(Prefix(true)) : System.Messaging.MessageQueue.GetPublicQueuesByMachine(serverName).SelectNames(Prefix(false));
                 }
             }
-            catch (MessageQueueException)
+            catch (MessageQueueException exception)
             {
+                _logger.Warning(exception, "Error Listing Message Queues");
+
                 return Enumerable.Empty<string>();
             }
         }
@@ -107,6 +119,8 @@ namespace Grumpy.MessageQueue.Msmq
             }
             catch (Exception exception)
             {
+                _logger.Debug(exception, "Error Sending Message to Message Queues");
+
                 throw new MessageQueueSendException(messageQueue, message, exception);
             }
         }
@@ -120,6 +134,8 @@ namespace Grumpy.MessageQueue.Msmq
             }
             catch (Exception exception)
             {
+                _logger.Debug(exception, "Error Receiving Message from Message Queues");
+
                 if (exception is MessageQueueException messageQueueException && messageQueueException.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
                     return null;
 
@@ -136,6 +152,8 @@ namespace Grumpy.MessageQueue.Msmq
             }
             catch (Exception exception)
             {
+                _logger.Debug(exception, "Error Receiving by Correlation Id Message from Message Queues");
+
                 if (exception is MessageQueueException messageQueueException && messageQueueException.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
                     return null;
 
@@ -152,6 +170,8 @@ namespace Grumpy.MessageQueue.Msmq
             }
             catch (Exception exception)
             {
+                _logger.Debug(exception, "Error Peeking Head of Message Queues");
+
                 throw new MessageQueuePeekException("Begin", messageQueue, timeout, exception);
             }
         }
@@ -165,6 +185,8 @@ namespace Grumpy.MessageQueue.Msmq
             }
             catch (Exception exception)
             {
+                _logger.Debug(exception, "Error ending Peek on Message Queues");
+
                 if (exception is MessageQueueException messageQueueException && messageQueueException.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
                     return null;
 
@@ -178,8 +200,10 @@ namespace Grumpy.MessageQueue.Msmq
             {
                 return Locale(serverName) ? System.Messaging.MessageQueue.Exists(Path(".", name, privateQueue)) : List(serverName, privateQueue).Any(n => n == name);
             }
-            catch (MessageQueueException)
+            catch (MessageQueueException exception)
             {
+                _logger.Debug(exception, "Error Checking if queue exist");
+
                 return false;
             }
         }

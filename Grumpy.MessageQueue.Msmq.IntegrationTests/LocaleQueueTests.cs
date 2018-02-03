@@ -8,6 +8,8 @@ using Grumpy.MessageQueue.Interfaces;
 using Grumpy.MessageQueue.Msmq.Exceptions;
 using Grumpy.MessageQueue.Msmq.IntegrationTests.Helper;
 using Grumpy.MessageQueue.Msmq.Interfaces;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 using Xunit;
 using NullLogger = Microsoft.Extensions.Logging.Abstractions.NullLogger;
 
@@ -15,7 +17,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 {
     public class LocaleQueueTests
     {
-        private readonly IMessageQueueManager _messageQueueManager = new MessageQueueManager();
+        private readonly IMessageQueueManager _messageQueueManager = new MessageQueueManager(Substitute.For<ILogger>());
         private readonly CancellationToken _cancellationToken = new CancellationToken();
         private readonly IMessageQueueTransactionFactory _messageQueueTransactionFactory = new MessageQueueTransactionFactory();
 

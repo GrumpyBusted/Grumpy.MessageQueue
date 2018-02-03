@@ -16,7 +16,7 @@ namespace Grumpy.MessageQueue.Msmq
         public QueueFactory(ILogger logger)
         {
             _logger = logger;
-            _messageQueueManager = new MessageQueueManager();
+            _messageQueueManager = new MessageQueueManager(logger);
             _messageQueueTransactionFactory = new MessageQueueTransactionFactory();
         }
 

@@ -1,13 +1,14 @@
 ﻿using FluentAssertions;
 using Grumpy.Common;
 using Grumpy.MessageQueue.Msmq.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 {
     public class MessageQueueManagerPublicTests
     {
-        private readonly IMessageQueueManager _messageQueueManager = new MessageQueueManager();
+        private readonly IMessageQueueManager _messageQueueManager = new MessageQueueManager(NullLogger.Instance);
 
         [Fact(Skip = "Only when on Active Directory Network")]
         public void CreatePublicQueueShouldWork()
