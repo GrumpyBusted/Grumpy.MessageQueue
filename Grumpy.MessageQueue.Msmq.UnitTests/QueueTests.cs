@@ -47,7 +47,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
             }
 
             _messageQueueManager.Received(0).Create(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<bool>());
-            _messageQueueManager.Received(2).Get(".", Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>());
+            _messageQueueManager.Received(1).Get(".", Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>());
         }
 
         [Fact]
@@ -286,6 +286,8 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
 
         private IQueue CreateLocaleQueue(string queue = "MyQueue", bool privateQueue = true, LocaleQueueMode localeQueueMode = LocaleQueueMode.TemporaryMaster, AccessMode accessMode = AccessMode.SendAndReceive, bool transactional = true)
         {
+            _messageQueueManager.Get(Arg.Any<string>(), queue, Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(new System.Messaging.MessageQueue());
+
             return new LocaleQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, queue, privateQueue, localeQueueMode, transactional, accessMode);
         }
 

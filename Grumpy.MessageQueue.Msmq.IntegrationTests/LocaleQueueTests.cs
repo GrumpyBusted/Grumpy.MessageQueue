@@ -188,7 +188,7 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
 
             try
             {
-                using (var queue = CreateLocalQueue(name, false))
+                using (var queue = CreateLocalQueue(name, true))
                 {
                     queue.Receive(1, _cancellationToken);
                 }
@@ -323,9 +323,9 @@ namespace Grumpy.MessageQueue.Msmq.IntegrationTests
                 {
                     queue.Send("ABC");
                     _messageQueueManager.Exists(name, true).Should().BeTrue();
-
                     _messageQueueManager.Delete(name, true);
                     _messageQueueManager.Exists(name, true).Should().BeFalse();
+                    queue.Disconnect();
                     queue.Send("ABC");
                     _messageQueueManager.Exists(name, true).Should().BeTrue();
                     queue.Reconnect();

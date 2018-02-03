@@ -59,6 +59,7 @@
     <Compile Include="QueueFactory.cs" />
     <Compile Include="RemoteQueue.cs" />
     <Compile Include="TransactionalMessage.cs" />
+    <Compile Include="Exceptions\UnableToGetQueueException.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Grumpy.Common">

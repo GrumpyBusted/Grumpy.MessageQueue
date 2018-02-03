@@ -20,7 +20,7 @@ namespace Grumpy.MessageQueue.Msmq.Exceptions
         /// <param name="messageQueue">Message Queue</param>
         /// <param name="timeout">Timeout</param>
         /// <param name="exception">Inner Exception</param>
-        public MessageQueueReceiveException(System.Messaging.MessageQueue messageQueue, TimeSpan timeout, Exception exception) : base("Unable to receive from Message Queue Exception", exception)
+        public MessageQueueReceiveException(System.Messaging.MessageQueue messageQueue, TimeSpan timeout, Exception exception) : base($"Unable to receive from Message Queue Exception ({messageQueue?.QueueName ?? ""})", exception)
         {
             Data.Add("Name", messageQueue?.QueueName);
             Data.Add(nameof(messageQueue), messageQueue.TrySerializeToJson());
@@ -35,7 +35,7 @@ namespace Grumpy.MessageQueue.Msmq.Exceptions
         /// <param name="correlationId">Correlation Id</param>
         /// <param name="timeout">Timeout</param>
         /// <param name="exception">Inner Exception</param>
-        public MessageQueueReceiveException(System.Messaging.MessageQueue messageQueue, string correlationId, TimeSpan timeout, Exception exception) : base("Unable to receive from Message Queue Exception", exception)
+        public MessageQueueReceiveException(System.Messaging.MessageQueue messageQueue, string correlationId, TimeSpan timeout, Exception exception) : base($"Unable to receive from Message Queue Exception ({messageQueue?.QueueName ?? ""})", exception)
         {
             Data.Add("QueueName", messageQueue?.QueueName);
             Data.Add(nameof(messageQueue), messageQueue.TrySerializeToJson());

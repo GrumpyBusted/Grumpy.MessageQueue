@@ -22,7 +22,7 @@ namespace Grumpy.MessageQueue.Msmq.Exceptions
         /// <param name="message">The Message</param>
         /// <param name="expectedType">Expected Message Type</param>
         /// <param name="actualType">Actual Message Type</param>
-        public InvalidMessageTypeReceivedException(string queueName, bool privateQueue, object message, Type expectedType, Type actualType) : base("Invalid Message Type Received")
+        public InvalidMessageTypeReceivedException(string queueName, bool privateQueue, object message, Type expectedType, Type actualType) : base($"Invalid Message Type Received ({queueName})")
         {
             Data.Add(nameof(queueName), queueName);
             Data.Add(nameof(privateQueue), privateQueue);

@@ -59,7 +59,6 @@ namespace Grumpy.MessageQueue.UnitTests
         [Fact]
         public void HandlerAndErrorHandlerThrowExceptionShouldNAckMessage()
         {
-            var numberOfErrors = 0;
             var message = CreateMessage("MyMessage");
 
             _queue.Receive(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(e => message, e => null);

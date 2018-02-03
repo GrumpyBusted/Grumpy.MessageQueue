@@ -24,26 +24,31 @@ namespace Grumpy.MessageQueue.Msmq
         {
             _localeQueueMode = localeQueueMode;
 
-            if (localeQueueMode.In(LocaleQueueMode.DurableCreate, LocaleQueueMode.TemporaryMaster))
-                CreateQueue();
+            switch (_localeQueueMode)
+            {
+                case LocaleQueueMode.TemporaryMaster:
+                    Create();
+                    base.ConnectInternal();
+                    break;
+                case LocaleQueueMode.DurableCreate:
+                    CreateIfNotExist();
+                    break;
+                case LocaleQueueMode.Durable:
+                    break;
+                case LocaleQueueMode.TemporarySlave:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
-        
+
         /// <inheritdoc />
-        public override void Connect()
+        protected override void ConnectInternal()
         {
-            try
-            {
-                if (!Exists())
-                    CreateQueue();
+            if (MessageQueue == null)
+                CreateIfNotExist();
 
-                base.Connect();
-            }
-            catch (QueueMissingException)
-            {
-                CreateQueue();
-
-                base.Connect();
-            }
+            base.ConnectInternal();
         }
 
         /// <inheritdoc />
@@ -91,38 +96,27 @@ namespace Grumpy.MessageQueue.Msmq
             }
         }
 
-        private void CreateQueue()
+        private void CreateIfNotExist()
         {
-            switch (_localeQueueMode)
+            if (!Exists())
             {
-                case LocaleQueueMode.DurableCreate:
-                    if (!Exists())
+                if (_localeQueueMode.In(LocaleQueueMode.DurableCreate, LocaleQueueMode.TemporaryMaster))
+                {
+                    using (var mutex = new Mutex(true, $@"Global\Grumpy.MessageQueue.{Name}"))
                     {
-                        using (var mutex = new Mutex(true, $@"Global\Grumpy.MessageQueue.{Name}"))
+                        mutex.WaitOne(10000);
+
+                        if (!Exists())
                         {
-                            mutex.WaitOne(10000);
-
-                            if (!Exists())
-                            {
-                                Create();
-
-                                Logger.Information("Durable queue created {Name} {Private}", Name, Private);
-                            }
-
-                            mutex.ReleaseMutex();
+                            DisconnectInternal();
+                            Create();
                         }
-                    }
 
-                    break;
-                case LocaleQueueMode.TemporaryMaster:
-                    Create();
-                    break;
-                case LocaleQueueMode.TemporarySlave:
-                    break;
-                case LocaleQueueMode.Durable:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                        mutex.ReleaseMutex();
+                    }
+                }
+                else
+                    throw new QueueMissingException(Name);
             }
         }
     }

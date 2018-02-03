@@ -19,7 +19,7 @@ namespace Grumpy.MessageQueue.Msmq.Exceptions
         /// <param name="name">Queue Name</param>
         /// <param name="privateQueue">Is queue private</param>
         /// <param name="exception">Inner Exception</param>
-        public QueueCreateException(string name, bool privateQueue, Exception exception) : base("Exception creating message queue", exception)
+        public QueueCreateException(string name, bool privateQueue, Exception exception) : base($"Exception creating message queue ({name})", exception)
         {
             Data.Add(nameof(name), name);
             Data.Add(nameof(privateQueue), privateQueue);

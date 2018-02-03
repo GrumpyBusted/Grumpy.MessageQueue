@@ -17,7 +17,7 @@ namespace Grumpy.MessageQueue.Msmq.Exceptions
         /// Queue not found exception
         /// </summary>
         /// <param name="name">Queue Name</param>
-        public QueueMissingException(string name) : base("Queue not found exception")
+        public QueueMissingException(string name) : base($"Queue not found exception ({name})")
         {
             Data.Add(nameof(name), name);
         }

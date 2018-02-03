@@ -26,7 +26,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         private readonly ILogger _logger = NullLogger.Instance;
 
         [Fact]
-        public void GetLocaleQueueWithCreateModeAutoShouldCreateQueue()
+        public void GetLocaleQueueWithQueueModeTempMasterShouldCreateQueue()
         {
             _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(e => true);
             _messageQueueManager.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(new System.Messaging.MessageQueue());
@@ -34,6 +34,34 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
             using (var cut = CreateLocalQueue("MyQueue"))
             {
                 cut.Connect();
+            }
+
+            _messageQueueManager.Received(1).Create(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<bool>());
+        }
+        
+
+        [Fact]
+        public void GetLocaleQueueWithQueueModeTempMasterShouldNotAskForExists()
+        {
+            _messageQueueManager.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(new System.Messaging.MessageQueue());
+
+            using (var cut = CreateLocalQueue("MyQueue"))
+            {
+                cut.Send("Message");
+            }
+
+            _messageQueueManager.Received(0).Exists(Arg.Any<string>(), Arg.Any<bool>());
+        }
+
+        [Fact]
+        public void ReceiveFromTempMasterQueueShouldCreateOnce()
+        {
+            _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(e => false, e => false, e => true);
+            _messageQueueManager.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(new System.Messaging.MessageQueue());
+
+            using (var cut = CreateLocalQueue("MyQueue"))
+            {
+                cut.Receive(10, _cancellationToken);
             }
 
             _messageQueueManager.Received(1).Create(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<bool>());
@@ -66,7 +94,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         [Fact]
         public void SendToExistingQueueShouldNotCallCreate()
         {
-            SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
+            SetQueue(Substitute.For<System.Messaging.MessageQueue>());
 
             using (var cut = CreateLocalQueue("MyQueue", true, LocaleQueueMode.Durable))
             {
@@ -77,7 +105,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
             }
 
             _messageQueueManager.Received(0).Create(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<bool>());
-            _messageQueueManager.Received(2).Get(".", Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>());
+            _messageQueueManager.Received(1).Get(".", Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>());
         }
         
         [Fact]
@@ -95,11 +123,11 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         }
 
         [Fact]
-        public void ShouldDeleteNoneDurableQueueAfterUse()
+        public void ShouldDeleteWhenQueueModeIsTempMasterQueueAfterUse()
         {
-            SetQueue(Substitute.For<System.Messaging.MessageQueue>(), false);
+            SetQueue(Substitute.For<System.Messaging.MessageQueue>());
 
-            using (var cut = CreateLocalQueue("MyQueue", false))
+            using (var cut = CreateLocalQueue("MyQueue"))
             {
                 cut.Send("Message");
             }
@@ -110,7 +138,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         [Fact]
         public void ShouldNotDeleteDurableQueueAfterUse()
         {
-            SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
+            SetQueue(Substitute.For<System.Messaging.MessageQueue>());
 
             using (var cut = CreateLocalQueue("MyQueue", true, LocaleQueueMode.DurableCreate))
             {
@@ -123,7 +151,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         [Fact]
         public void SendNullMessageShouldSendOneMessage()
         {
-            SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
+            SetQueue(Substitute.For<System.Messaging.MessageQueue>());
 
             using (var cut = CreateLocalQueue("MyQueue"))
             {
@@ -136,7 +164,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         [Fact]
         public void SendShortMessageShouldSendOneMessageWithAppSpecificOneAndNoCorrelationId()
         {
-            SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
+            SetQueue(Substitute.For<System.Messaging.MessageQueue>());
 
             using (var cut = CreateLocalQueue("MyQueue"))
             {
@@ -149,7 +177,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         [Fact]
         public void SendLargeMessageShouldSendTwoMessage()
         {
-            SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
+            SetQueue(Substitute.For<System.Messaging.MessageQueue>());
 
             using (var cut = CreateLocalQueue("MyQueue"))
             {
@@ -164,7 +192,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         {
             var messageQueue = Substitute.For<System.Messaging.MessageQueue>();
 
-            SetQueue(messageQueue, true);
+            SetQueue(messageQueue);
 
             AddMessageToQueue(messageQueue, new MyDto { I = 1, S = "S" });
 
@@ -182,7 +210,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         {
             var messageQueue = Substitute.For<System.Messaging.MessageQueue>();
 
-            SetQueue(messageQueue, true);
+            SetQueue(messageQueue);
 
             AddMessageToQueue(messageQueue, new MyDto { I = 1, S = "S" });
 
@@ -204,7 +232,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         {
             var messageQueue = Substitute.For<System.Messaging.MessageQueue>();
 
-            SetQueue(messageQueue, true);
+            SetQueue(messageQueue);
 
             AddMessageToQueue(messageQueue, "Hallo");
 
@@ -220,7 +248,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         [Fact]
         public void ReceiveFromEmptyQueueShouldReturnNullAfterTimeout()
         {
-            SetQueue(Substitute.For<System.Messaging.MessageQueue>(), true);
+            SetQueue(Substitute.For<System.Messaging.MessageQueue>());
 
             using (var cut = CreateLocalQueue("MyQueue"))
             {
@@ -233,10 +261,10 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
             return new LocaleQueue(_logger, _messageQueueManager, _messageQueueTransactionFactory, queue, privateQueue, localeQueueMode, true, AccessMode.SendAndReceive);
         }
 
-        private void SetQueue(System.Messaging.MessageQueue queue, bool exists)
+        private void SetQueue(System.Messaging.MessageQueue queue)
         {
-            _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(exists);
-            _messageQueueManager.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(null, queue);
+            _messageQueueManager.Exists(Arg.Any<string>(), Arg.Any<bool>()).Returns(true);
+            _messageQueueManager.Get(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<QueueAccessMode>()).Returns(queue);
         }
 
         private void AddMessageToQueue(System.Messaging.MessageQueue messageQueue, object dto)

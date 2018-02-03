@@ -14,7 +14,7 @@ namespace Grumpy.MessageQueue.Msmq.UnitTests
         [Fact]
         public void MessageQueueFactoryCanCreateLocaleInstance()
         {
-            using (var queue = CreateQueueFactory().CreateLocale("MyQueue", false, LocaleQueueMode.DurableCreate, true, AccessMode.Receive))
+            using (var queue = CreateQueueFactory().CreateLocale("MyQueue", true, LocaleQueueMode.DurableCreate, true, AccessMode.Receive))
             {
                 queue.Should().NotBeNull();
                 queue.GetType().Should().Be(typeof(LocaleQueue));
