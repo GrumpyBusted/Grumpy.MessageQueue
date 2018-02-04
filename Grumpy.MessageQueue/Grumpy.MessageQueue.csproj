@@ -58,7 +58,7 @@
       <Version>1.2.7</Version>
     </PackageReference>
     <PackageReference Include="Grumpy.Logging">
-      <Version>1.0.4</Version>
+      <Version>1.0.5</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
