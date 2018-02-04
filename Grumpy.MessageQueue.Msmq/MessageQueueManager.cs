@@ -49,13 +49,13 @@ namespace Grumpy.MessageQueue.Msmq
             {
                 var queue = System.Messaging.MessageQueue.Create(Path(".", name, privateQueue), transactional);
 
-                TimerUtility.WaitForIt(() => Exists(".", name, privateQueue), privateQueue ? 1000 : 20000);
+                TimerUtility.WaitForIt(() => Exists(".", name, privateQueue), privateQueue ? 10000 : 20000);
 
                 return queue;
             }
             catch (Exception exception)
             {
-                _logger.Information(exception, "Error Creating Message Queue {}");
+                _logger.Information(exception, "Error Creating Message Queue {Name}", name);
 
                 throw new QueueCreateException(name, privateQueue, exception);
             }
@@ -70,7 +70,7 @@ namespace Grumpy.MessageQueue.Msmq
             }
             catch (MessageQueueException exception)
             {
-                _logger.Information(exception, "Error Deleting Message Queue");
+                _logger.Information(exception, "Error Deleting Message Queue {Name}", name);
             }
         }
 
@@ -89,7 +89,7 @@ namespace Grumpy.MessageQueue.Msmq
                 {
                     System.Messaging.MessageQueue.ClearConnectionCache();
 
-                    return Exists(serverName, name, privateQueue) ? new System.Messaging.MessageQueue(Path(serverName, name, privateQueue), mode) : null;
+                    return Exists(serverName, name, privateQueue) ? new System.Messaging.MessageQueue(Path(serverName, name, privateQueue), mode) : null; 
                 }
             }
             catch (MessageQueueException exception)
@@ -211,6 +211,16 @@ namespace Grumpy.MessageQueue.Msmq
         {
             try
             {
+                var l = Locale(serverName);
+
+                var p1 = Path(".", name, privateQueue);
+                var p2 = Path(serverName, name, privateQueue);
+
+                var e1 = System.Messaging.MessageQueue.Exists(p1);
+                var e2 = System.Messaging.MessageQueue.Exists(p2);
+
+                _logger.Debug($"Exists {l} {p1} {p2} {e1} {e2}");
+
                 return Locale(serverName) ? System.Messaging.MessageQueue.Exists(Path(".", name, privateQueue)) : List(serverName, privateQueue).Any(n => n == name);
             }
             catch (MessageQueueException exception)
