@@ -147,10 +147,10 @@ namespace Grumpy.MessageQueue.Msmq
             }
             catch (Exception exception)
             {
-                _logger.Debug(exception, "Error Receiving Message from Message Queues");
-
                 if (exception is MessageQueueException messageQueueException && messageQueueException.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
                     return null;
+
+                _logger.Debug(exception, "Error Receiving Message from Message Queues");
 
                 throw new MessageQueueReceiveException(messageQueue, timeout, exception);
             }
@@ -165,10 +165,10 @@ namespace Grumpy.MessageQueue.Msmq
             }
             catch (Exception exception)
             {
-                _logger.Debug(exception, "Error Receiving by Correlation Id Message from Message Queues");
-
                 if (exception is MessageQueueException messageQueueException && messageQueueException.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
                     return null;
+
+                _logger.Debug(exception, "Error Receiving by Correlation Id Message from Message Queues");
 
                 throw new MessageQueueReceiveException(messageQueue, correlationId, timeout, exception);
             }

@@ -149,12 +149,9 @@ namespace Grumpy.MessageQueue
         {
             try
             {
-                _heartRateMonitor?.Start();
-
                 while (!(_cancellationTokenSource?.Token.IsCancellationRequested ?? true))
                 {
-                    if (_heartRateMonitor != null && _numberOfException == 0 && _heartRateMonitor.ElapsedMilliseconds > _heartRateMilliseconds)
-                        Heartbeat();
+                    Heartbeat();
 
                     var message = ReceiveMessage();
 
@@ -240,7 +237,7 @@ namespace Grumpy.MessageQueue
                 else
                     message.NAck();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Information(ex, "Exception in Error Handler {QueueName} {@Message} {@Exception}", _queueName, message, exception);
 
@@ -263,13 +260,26 @@ namespace Grumpy.MessageQueue
 
         private void Heartbeat()
         {
+            if (_heartbeatHandler == null)
+                return;
+
+            if (!_heartRateMonitor.IsRunning)
+            {
+                _heartRateMonitor.Start();
+
+                return;
+            }
+
+            if (_numberOfException > 0 || _heartRateMonitor?.ElapsedMilliseconds < _heartRateMilliseconds)
+                return;
+
             _logger.Debug("Heartbeat Handler called {QueueName}", _queueName);
 
             try
             {
-                _heartbeatHandler?.Invoke();
+                _heartbeatHandler.Invoke();
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 _logger.Warning(exception, "Error in Heartbeat Handler {QueueName}", _queueName);
             }
@@ -306,21 +316,24 @@ namespace Grumpy.MessageQueue
         {
             if (_numberOfException == 0)
             {
-                _logger.Debug("Cleaning up dead tasks {QueueName}", _queueName);
-
                 try
                 {
-                    foreach (var task in _workTasks.Where(t => t.IsCompleted || t.IsFaulted))
+                    if (_workTasks.Any())
                     {
-                        if (task.IsFaulted)
-                            CallErrorHandler(task.AsyncState, task.Exception);
+                        _logger.Debug("Cleaning up dead tasks {QueueName}", _queueName);
 
-                        task.Dispose();
+                        foreach (var task in _workTasks.Where(t => t.IsCompleted || t.IsFaulted))
+                        {
+                            if (task.IsFaulted)
+                                CallErrorHandler(task.AsyncState, task.Exception);
+
+                            task.Dispose();
+                        }
+
+                        _workTasks.RemoveAll(t => t.IsCompleted || t.IsFaulted);
                     }
-
-                    _workTasks.RemoveAll(t => t.IsCompleted || t.IsFaulted);
                 }
-                catch(Exception exception)
+                catch (Exception exception)
                 {
                     _logger.Information(exception, "Error in cleaning up dead tasks {QueueName}", _queueName);
                 }

@@ -337,7 +337,7 @@ namespace Grumpy.MessageQueue.Msmq
             {
                 if (exception is TaskCanceledException taskCanceledException)
                 {
-                    Logger.Warning(taskCanceledException, "Receive canceled {@Queue}", this);
+                    Logger.Debug(taskCanceledException, "Receive canceled {@Queue}", this);
 
                     return new TransactionalMessage();
                 }
