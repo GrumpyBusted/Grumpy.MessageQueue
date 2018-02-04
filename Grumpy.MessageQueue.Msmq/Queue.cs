@@ -335,6 +335,13 @@ namespace Grumpy.MessageQueue.Msmq
             }
             catch (Exception exception)
             {
+                if (exception is TaskCanceledException taskCanceledException)
+                {
+                    Logger.Warning(taskCanceledException, "Receive canceled {@Queue}", this);
+
+                    return new TransactionalMessage();
+                }
+
                 Logger.Warning(exception, "Error receiving message, retrying once {@Queue}", this);
 
                 DisconnectInternal();

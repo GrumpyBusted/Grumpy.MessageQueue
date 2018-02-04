@@ -28,7 +28,7 @@ namespace Grumpy.MessageQueue.Msmq
         }
 
         private const string PrivatePrefix = @"private$\";
-        private string Path(string serverName, string name, bool privateQueue) => (Locale(serverName) ? "" : $"FormatName:DIRECT=OS:") + Name(name, privateQueue);
+        private string Path(string serverName, string name, bool privateQueue) => (Locale(serverName) ? "" : "FormatName:DIRECT=OS:") + Name(name, privateQueue);
 
         private string Name(string name, bool privateQueue)
         {
