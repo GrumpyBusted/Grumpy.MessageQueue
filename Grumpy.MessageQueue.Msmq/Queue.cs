@@ -396,9 +396,9 @@ namespace Grumpy.MessageQueue.Msmq
         {
             var jsonSerializerSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
 
-            var body = new QueueMessage { MessageBody = message.SerializeToJson(jsonSerializerSettings), MessageType = typeof(T) }.SerializeToJson(jsonSerializerSettings);
+            var queueMessage = new QueueMessage { MessageBody = message.SerializeToJson(jsonSerializerSettings), MessageType = typeof(T) };
 
-            using (var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(body)))
+            using (var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(queueMessage.SerializeToJson(jsonSerializerSettings))))
             {
                 var buffer = new byte[MaxMsmqMessageSize];
                 var correlationId = "";
@@ -407,26 +407,26 @@ namespace Grumpy.MessageQueue.Msmq
                 int bytes;
                 var chunk = 0;
 
-                Logger.Debug("Message Send {QueueName} {Type} {%Message}", Name, typeof(T).FullName, body);
+                Logger.Debug("Message send {QueueName} {Type} {%Message}", Name, queueMessage.MessageType.FullName, queueMessage.MessageBody);
 
                 if (!Transactional && numberOfChunks > 1)
                     throw new MessageSizeException(memoryStream.Length, buffer.Length, Transactional);
 
                 while ((bytes = memoryStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    var queueMessage = new Message
+                    var mqMessage = new Message
                     {
                         AppSpecific = numberOfChunks,
                         CorrelationId = correlationId
                     };
 
-                    queueMessage.BodyStream.Write(buffer, 0, bytes);
+                    mqMessage.BodyStream.Write(buffer, 0, bytes);
 
                     Logger.Debug("Sending message chunk ({Chunk}/{NumberOfChunks}) on {QueueName} {CorrelationId}", ++chunk, numberOfChunks, Name, correlationId);
 
-                    MessageQueueManager.Send(MessageQueue, queueMessage, messageQueueTransaction?.Transaction);
+                    MessageQueueManager.Send(MessageQueue, mqMessage, messageQueueTransaction?.Transaction);
 
-                    correlationId = queueMessage.Id;
+                    correlationId = mqMessage.Id;
                 }
             }
         }
