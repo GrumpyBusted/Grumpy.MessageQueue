@@ -407,8 +407,7 @@ namespace Grumpy.MessageQueue.Msmq
                 int bytes;
                 var chunk = 0;
 
-                Logger.Debug("Sending message in {Chunks} Chucks on {QueueName} {Transactional}", numberOfChunks, Name, Transactional);
-                Logger.Debug($"Message: {body}");
+                Logger.Debug("Message Send {QueueName} {Type} {%Message}", Name, typeof(T).FullName, body);
 
                 if (!Transactional && numberOfChunks > 1)
                     throw new MessageSizeException(memoryStream.Length, buffer.Length, Transactional);
@@ -485,7 +484,7 @@ namespace Grumpy.MessageQueue.Msmq
             {
                 var queueMessage = streamReader.ReadToEnd().DeserializeFromJson<QueueMessage>();
 
-                Logger.Debug("Message received from {QueueName} {Type} {Message}", Name, queueMessage?.MessageType?.FullName, queueMessage?.MessageBody);
+                Logger.Debug("Message received {QueueName} {Type} {%Message}", Name, queueMessage?.MessageType?.FullName, queueMessage?.MessageBody);
 
                 if (queueMessage == null)
                 {
