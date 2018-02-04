@@ -17,16 +17,29 @@ namespace Grumpy.MessageQueue.Msmq
     {
         private readonly ILogger _logger;
         private readonly object _lock;
+        private readonly string _serverName;
 
         /// <inheritdoc />
         public MessageQueueManager(ILogger logger)
         {
             _logger = logger;
             _lock = new object();
+            _serverName = Environment.GetEnvironmentVariable("COMPUTERNAME");
         }
 
         private const string PrivatePrefix = @"private$\";
-        private static string Path(string serverName, string name, bool privateQueue) => (Locale(serverName) ? "." : "FormatName:DIRECT=OS:" + serverName.ToLower()) + @"\" + Prefix(privateQueue) + name.ToLower();
+        private string Path(string serverName, string name, bool privateQueue) => (Locale(serverName) ? "" : $"FormatName:DIRECT=OS:") + Name(name, privateQueue);
+
+        private string Name(string name, bool privateQueue)
+        {
+            var res = _serverName.ToLower() + @"\" + Prefix(privateQueue) + name.ToLower();
+
+            if (res.Length > 124)
+                throw new QueueNameException(res, 124);
+
+            return res;
+        }
+        
         private static string Prefix(bool privateQueue) => privateQueue ? PrivatePrefix.ToLower() : "";
 
         /// <inheritdoc />
@@ -208,6 +221,9 @@ namespace Grumpy.MessageQueue.Msmq
             }
         }
 
-        private static bool Locale(string serverName) => serverName.NullOrWhiteSpace() || serverName.In(".", Environment.GetEnvironmentVariable("COMPUTERNAME"));
+        private bool Locale(string serverName)
+        {
+            return serverName.NullOrWhiteSpace() ||serverName.In(".", _serverName);
+        }
     }
 }
