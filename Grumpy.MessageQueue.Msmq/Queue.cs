@@ -444,7 +444,7 @@ namespace Grumpy.MessageQueue.Msmq
                 {
                     var message = MessageQueueManager.Receive(MessageQueue, TimeSpan.Zero, messageQueueTransaction?.Transaction);
 
-                    Logger.Debug("Received message chunk ({Chunk}/{NumberOfChunks}) from {QueueName} {@Message}", 1, message?.AppSpecific ?? 0, Name, message);
+                    Logger.Debug("Received message chunk ({Chunk}/{NumberOfChunks}) from {QueueName}", 1, message?.AppSpecific ?? 0, Name);
 
                     var messageNumber = 0;
 
@@ -456,7 +456,7 @@ namespace Grumpy.MessageQueue.Msmq
                         {
                             message = MessageQueueManager.ReceiveByCorrelationId(MessageQueue, message.Id, TimeSpan.Zero, messageQueueTransaction?.Transaction);
 
-                            Logger.Debug("Received message chunk ({Chunk}/{NumberOfChunks}) from {QueueName} {@Message}", messageNumber + 1, message?.AppSpecific ?? 0, Name, message);
+                            Logger.Debug("Received message chunk ({Chunk}/{NumberOfChunks}) from {QueueName}", messageNumber + 1, message?.AppSpecific ?? 0, Name);
                         }
                     }
 
@@ -477,13 +477,15 @@ namespace Grumpy.MessageQueue.Msmq
             return Transactional ? _messageQueueTransactionFactory.Create() : null;
         }
 
-        private static ITransactionalMessage CreateTransactionalMessage(Stream stream, IMessageQueueTransaction messageQueueTransaction)
+        private ITransactionalMessage CreateTransactionalMessage(Stream stream, IMessageQueueTransaction messageQueueTransaction)
         {
             stream.Position = 0;
 
             using (var streamReader = new StreamReader(stream, Encoding.UTF8))
             {
                 var queueMessage = streamReader.ReadToEnd().DeserializeFromJson<QueueMessage>();
+
+                Logger.Debug("Message received from {QueueName} {Type} {Message}", Name, queueMessage?.MessageType?.FullName, queueMessage?.MessageBody);
 
                 if (queueMessage == null)
                 {
