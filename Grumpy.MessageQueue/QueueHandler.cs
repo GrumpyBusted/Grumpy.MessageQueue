@@ -212,7 +212,7 @@ namespace Grumpy.MessageQueue
 
         private void Handler(ITransactionalMessage message)
         {
-            _logger.Debug("Handler called {QueueName} {@Message}", _queueName, message);
+            _logger.Debug("Handler called {QueueName} {@Message}", _queueName, message?.Message);
 
             try
             {
@@ -228,7 +228,7 @@ namespace Grumpy.MessageQueue
 
         private void ErrorHandler(ITransactionalMessage message, Exception exception)
         {
-            _logger.Debug(exception, "Error Handler called {QueueName} {@Message}", _queueName, message);
+            _logger.Debug(exception, "Error Handler called {QueueName} {@Message}", _queueName, message?.Message);
 
             try
             {
@@ -306,7 +306,7 @@ namespace Grumpy.MessageQueue
             }
             catch (Exception exception)
             {
-                _logger.Warning(exception, "Error starting handler task {QueueName} {@Message}", _queueName, message);
+                _logger.Warning(exception, "Error starting handler task {QueueName} {@Message}", _queueName, message?.Message);
 
                 ErrorHandler(message, new TaskCreationException(exception));
             }
