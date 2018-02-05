@@ -17,7 +17,7 @@
         <dependencies>
             <dependency id="Grumpy.Common" version="1.2.7" />
             <dependency id="Grumpy.Json" version="1.2.3" />
-            <dependency id="Grumpy.Logging" version="1.0.5" />
+            <dependency id="Grumpy.Logging" version="1.0.6" />
         </dependencies>
     </metadata>
     <files>

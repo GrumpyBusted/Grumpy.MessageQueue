@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Messaging;
@@ -49,7 +50,8 @@ namespace Grumpy.MessageQueue.Msmq
             {
                 var queue = System.Messaging.MessageQueue.Create(Path(".", name, privateQueue), transactional);
 
-                TimerUtility.WaitForIt(() => Exists(".", name, privateQueue), privateQueue ? 10000 : 20000);
+                if (!TimerUtility.WaitForIt(() => Exists(".", name, privateQueue), privateQueue ? 1000 : 20000))
+                    throw new TimeoutException("Queue not created in time");
 
                 return queue;
             }
@@ -211,16 +213,6 @@ namespace Grumpy.MessageQueue.Msmq
         {
             try
             {
-                var l = Locale(serverName);
-
-                var p1 = Path(".", name, privateQueue);
-                var p2 = Path(serverName, name, privateQueue);
-
-                var e1 = System.Messaging.MessageQueue.Exists(p1);
-                var e2 = System.Messaging.MessageQueue.Exists(p2);
-
-                _logger.Debug($"Exists {l} {p1} {p2} {e1} {e2}");
-
                 return Locale(serverName) ? System.Messaging.MessageQueue.Exists(Path(".", name, privateQueue)) : List(serverName, privateQueue).Any(n => n == name);
             }
             catch (MessageQueueException exception)
