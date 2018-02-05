@@ -87,5 +87,11 @@ namespace Grumpy.MessageQueue.Interfaces
         /// <typeparam name="T">Expected type of message, throws exception if message do not match</typeparam>
         /// <returns>Message</returns>
         T Receive<T>(int millisecondsTimeout, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Get Queue definition in json 
+        /// </summary>
+        /// <returns>Object serialized to Json</returns>
+        string ToJson();
     }
 }

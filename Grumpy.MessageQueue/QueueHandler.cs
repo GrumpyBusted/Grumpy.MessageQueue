@@ -241,7 +241,7 @@ namespace Grumpy.MessageQueue
             {
                 _logger.Information(ex, "Exception in Error Handler {QueueName} {@Message} {@Exception}", _queueName, message, exception);
 
-                message.NAck();
+                message?.NAck();
             }
         }
 

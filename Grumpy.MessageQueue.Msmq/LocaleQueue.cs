@@ -2,6 +2,7 @@
 using System.Messaging;
 using System.Threading;
 using Grumpy.Common.Extensions;
+using Grumpy.Json;
 using Grumpy.Logging;
 using Grumpy.MessageQueue.Enum;
 using Grumpy.MessageQueue.Interfaces;
@@ -77,6 +78,12 @@ namespace Grumpy.MessageQueue.Msmq
         protected override System.Messaging.MessageQueue GetQueue(AccessMode accessMode)
         {
             return MessageQueueManager.Get(".", Name, Private, accessMode == AccessMode.Receive ? QueueAccessMode.Receive : accessMode == AccessMode.Send ? QueueAccessMode.Send : QueueAccessMode.SendAndReceive);
+        }
+
+        /// <inheritdoc />
+        public override string ToJson()
+        {
+            return this.SerializeToJson();
         }
 
         /// <inheritdoc />

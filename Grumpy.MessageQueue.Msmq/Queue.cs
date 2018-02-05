@@ -120,13 +120,13 @@ namespace Grumpy.MessageQueue.Msmq
                     return count;
                 }
 
-                Logger.Warning("Unable to count messages {@Queue}", this);
+                Logger.Warning("Unable to count messages {%Queue}", ToJson());
 
                 return -1;
             }
             catch (Exception exception)
             {
-                Logger.Warning(exception, "Unable to count messages {@Queue}", this);
+                Logger.Warning(exception, "Unable to count messages {%Queue}", ToJson());
 
                 return -1;
             }
@@ -173,7 +173,7 @@ namespace Grumpy.MessageQueue.Msmq
 
                 _stopwatch.Restart();
 
-                Logger.Information("Connected to Message Queue {@Queue}", this);
+                Logger.Debug("Connected to Message Queue {%Queue}", ToJson());
             }
         }
 
@@ -195,7 +195,7 @@ namespace Grumpy.MessageQueue.Msmq
             MessageQueue?.Dispose();
             MessageQueue = null;
 
-            Logger.Information("Disconnect from Message Queue {@Queue}", this);
+            Logger.Debug("Disconnect from Message Queue {%Queue}", ToJson());
         }
 
         /// <inheritdoc />
@@ -239,7 +239,7 @@ namespace Grumpy.MessageQueue.Msmq
                 }
                 catch (Exception exception)
                 {
-                    Logger.Warning(exception, "Error sending, retrying once {@Queue}", this);
+                    Logger.Warning(exception, "Error sending, retrying once {%Queue}", ToJson());
 
                     DisconnectInternal();
 
@@ -303,6 +303,9 @@ namespace Grumpy.MessageQueue.Msmq
         }
 
         /// <inheritdoc />
+        public abstract string ToJson();
+
+        /// <inheritdoc />
         public ITransactionalMessage Receive(int millisecondsTimeout, CancellationToken cancellationToken)
         {
             try
@@ -311,7 +314,7 @@ namespace Grumpy.MessageQueue.Msmq
             }
             catch (AggregateException exception)
             {
-                Logger.Information(exception, "Error receiving message {@Queue}", this);
+                Logger.Information(exception, "Error receiving message {%Queue}", ToJson());
 
                 if (exception.InnerException?.GetType() == typeof(TaskCanceledException))
                     return new TransactionalMessage();
@@ -337,12 +340,12 @@ namespace Grumpy.MessageQueue.Msmq
             {
                 if (exception is TaskCanceledException taskCanceledException)
                 {
-                    Logger.Debug(taskCanceledException, "Receive canceled {@Queue}", this);
+                    Logger.Debug(taskCanceledException, "Receive canceled {%Queue}", ToJson());
 
                     return new TransactionalMessage();
                 }
 
-                Logger.Warning(exception, "Error receiving message, retrying once {@Queue}", this);
+                Logger.Warning(exception, "Error receiving message, retrying once {%Queue}", ToJson());
 
                 DisconnectInternal();
 

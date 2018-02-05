@@ -1,4 +1,5 @@
 ﻿using System.Messaging;
+using Grumpy.Json;
 using Grumpy.MessageQueue.Enum;
 using Grumpy.MessageQueue.Interfaces;
 using Grumpy.MessageQueue.Msmq.Interfaces;
@@ -24,6 +25,12 @@ namespace Grumpy.MessageQueue.Msmq
         protected override System.Messaging.MessageQueue GetQueue(AccessMode accessMode)
         {
             return MessageQueueManager.Get(ServerName, Name, Private, accessMode == AccessMode.Receive ? QueueAccessMode.Receive : accessMode == AccessMode.Send ? QueueAccessMode.Send : QueueAccessMode.SendAndReceive);
+        }
+
+        /// <inheritdoc />
+        public override string ToJson()
+        {
+            return this.SerializeToJson();
         }
 
         /// <inheritdoc />
