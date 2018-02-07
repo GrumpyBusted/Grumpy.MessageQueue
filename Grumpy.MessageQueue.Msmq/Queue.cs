@@ -219,7 +219,7 @@ namespace Grumpy.MessageQueue.Msmq
 
         private void AutoReconnect()
         {
-            if (_stopwatch.ElapsedMilliseconds > 10000 && MessageQueue != null)
+            if (_stopwatch.ElapsedMilliseconds > 60000 && MessageQueue != null)
                 DisconnectInternal();
 
             ConnectInternal();
