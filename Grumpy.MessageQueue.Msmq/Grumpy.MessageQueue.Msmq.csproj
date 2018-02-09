@@ -43,6 +43,7 @@
     <Compile Include="Exceptions\MessageQueueReceiveException.cs" />
     <Compile Include="Exceptions\MessageQueueSendException.cs" />
     <Compile Include="Exceptions\MessageSizeException.cs" />
+    <Compile Include="Exceptions\MissingChunkException.cs" />
     <Compile Include="Exceptions\QueueCreateException.cs" />
     <Compile Include="Exceptions\QueueMissingException.cs" />
     <Compile Include="Extensions\MessageQueueListExtensions.cs" />

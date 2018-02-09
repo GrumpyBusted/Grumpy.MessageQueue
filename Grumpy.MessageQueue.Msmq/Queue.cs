@@ -446,7 +446,10 @@ namespace Grumpy.MessageQueue.Msmq
                 {
                     var message = MessageQueueManager.Receive(MessageQueue, TimeSpan.Zero, messageQueueTransaction?.Transaction);
 
-                    Logger.Debug("Received message chunk ({Chunk}/{NumberOfChunks}) from {QueueName}", 1, message?.AppSpecific ?? 0, Name);
+                    if (message == null)
+                        Logger.Debug($"Receive timeout from {Name}");
+                    else
+                        Logger.Debug("Received message chunk ({Chunk}/{NumberOfChunks}) from {QueueName}", 1, message.AppSpecific, Name);
 
                     var messageNumber = 0;
 
@@ -458,7 +461,8 @@ namespace Grumpy.MessageQueue.Msmq
                         {
                             message = MessageQueueManager.ReceiveByCorrelationId(MessageQueue, message.Id, TimeSpan.Zero, messageQueueTransaction?.Transaction);
 
-                            Logger.Debug("Received message chunk ({Chunk}/{NumberOfChunks}) from {QueueName}", messageNumber + 1, message?.AppSpecific ?? 0, Name);
+                            if (message == null)
+                                throw new MissingChunkException(Name, messageNumber);
                         }
                     }
 
@@ -487,7 +491,8 @@ namespace Grumpy.MessageQueue.Msmq
             {
                 var queueMessage = streamReader.ReadToEnd().DeserializeFromJson<QueueMessage>();
 
-                Logger.Debug("Message received {QueueName} {Type} {%Message}", Name, queueMessage?.MessageType?.FullName, queueMessage?.MessageBody);
+                if (queueMessage != null)
+                    Logger.Debug("Message received {QueueName} {Type} {%Message}", Name, queueMessage?.MessageType?.FullName, queueMessage?.MessageBody);
 
                 if (queueMessage == null)
                 {
