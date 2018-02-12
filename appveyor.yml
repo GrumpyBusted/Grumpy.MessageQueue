@@ -1,9 +1,8 @@
-version: 1.3.{build}
+version: 2.0.{build}
 skip_commits:
   message: /NO-BUILD/
   files:
     - docs/*
-    - 'appveyor.yml'
     - 'LICENSE'
     - 'README.md'
 assembly_info:
@@ -11,9 +10,6 @@ assembly_info:
   file: '**\AssemblyInfo.cs'
   assembly_version: '{version}'
   assembly_file_version: '{version}'
-nuget:
-  account_feed: true
-  project_feed: true
 before_build:
   - ps: nuget restore
 image: Visual Studio 2017
